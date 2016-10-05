@@ -48,10 +48,11 @@ def add_n0ise():
 	print '[*] adding n0ise..'
 	y = seq_array[i]
 	# Add some randomness for schlitz n giggles
-	randy = random.randint(-999999999, 999999999)
+	randy = random.randint(-99999999, 99999999)
 	pkt.seq = y + randy
 	# Signal noisy packet
-	pkt.window = 8182 - random.randint(23, 275)
+	pkt.window = int(8182) - random.randint(23, 275)
+	pkt.ttl = 128
 	send(pkt)
 
 
@@ -68,7 +69,7 @@ convert_message()
 # that's complex enough to at least frustrate our adversaries.
 msglen = len(seq_array)
 
-pkt = IP(src=source, dst=destination, ttl=48)/TCP(dport=80, flags='S')
+pkt = IP(src=source, dst=destination)/TCP(dport=80, flags='S')
 
 # For now we'll send the message, without noise.
 i = 0
@@ -76,6 +77,7 @@ k = 8192 # window size
 for s in seq_array:
 	add_n0ise()
 	pkt.window = k
+	pkt.ttl = 64
 	pkt.seq = seq_array[i]
 	send(pkt)
 	i += 1
