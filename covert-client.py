@@ -1,19 +1,28 @@
 #!/usr/bin/env python
 
-# Send a message using TCP sequence numbers and ttl. The value is used to
-# inject noise into the channel.
+'''
+Send a message using TCP sequence numbers and ttl. The value is used to inject
+noise into the channel.
 
-# Sequence numbers have a generous size limit of 32bits.
-#
-# The sequence numbers are converted to ASCII by dividing by 16777216 which is
-# a representation of 65536*256. [1] see README
+Sequence numbers have a generous size limit of 32bits.
 
-# TODO:
-# - add try, except where appropriate
-# - add mode [demo, live]
-#   demo mode will send packets immediately
-#   live mode will send 1 packet per second 3 times, once a minute (adjustable)
+The sequence numbers are converted to ASCII by dividing by 16777216 which is a
+representation of 65536*256. [1] see README
 
+TODO:
+- add try, except where appropriate
+- add mode [demo, live]
+  demo mode will send packets immediately
+  live mode will send 1 packet per second 3 times, once a minute (adjustable)
+- add bounce functionality
+  e.g. if on a firewalled network, bounce off an active web server within the
+       domain
+
+Questions:
+- Why not bounce of DNS server(s) ?
+- Should we cipher the seq numbers we generate in order to add a layer of
+  obfuscation?
+'''
 
 # =======
 # Imports
@@ -98,6 +107,8 @@ convert_message()
 # that's complex enough to at least frustrate our adversaries.
 msglen = len(seq_array)
 
+# Craft our basic packet.
+# Future work: adjust some fields to perhaps better emulate commonly seen traffic.
 pkt = IP(src=spoof, dst=destination)/TCP(dport=80, flags='S')
 
 send_packet()
