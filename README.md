@@ -49,6 +49,11 @@ TODO:
 TODO:
     
 
+## Packet captures
+ 
+![localhost example](images/example-localhost.png)
+
+
 ## Scapy Defaults
 
 Scapy tries to use sensible default values for all packet fields.
