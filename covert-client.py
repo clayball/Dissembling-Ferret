@@ -8,12 +8,11 @@
 #   ###  #  ### #    ##      #  #   #
  ##                          #   ## #
 
-
   ( () \/ [- /? ~|~   ~|~ ( |^
 
 
-Send a message using TCP sequence numbers and ttl. The value is used to inject
-noise into the channel.
+Send a message using TCP sequence numbers, ttl, window size, and perhaps
+others. Inject noise into the channel to confuse eavesdroppers.
 
 Sequence numbers have a generous size limit of 32bits.
 
@@ -26,8 +25,7 @@ TODO:
   demo mode will send packets immediately
   live mode will send 1 packet per second 3 times, once a minute (adjustable)
 - add bounce functionality
-  e.g. if on a firewalled network, bounce off an active web server within the
-       domain
+  e.g. bounce off an active web server
 
 Questions:
 - Why not bounce of DNS server(s) ?

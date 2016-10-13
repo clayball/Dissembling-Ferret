@@ -5,6 +5,7 @@ Covert channels in the TCP/IP protocol suite. This topic is old but still releva
 TODO:
 - randomize the data sent (look like a spider)
 - use SYN-ACK instead of SYN? mimic response traffic (not trigger firewall alert?)
+- See code for more TODO's
 
 
 ## Usage examples
