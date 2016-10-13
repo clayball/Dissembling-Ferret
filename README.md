@@ -34,6 +34,9 @@ TODO:
 
 - Start server
 
+    On the server receiving the data..
+    
+    TODO: ```sudo ./covert-server.py```
 
 - Run client using sudo
 
@@ -41,9 +44,10 @@ TODO:
     
     ```sudo ./covert-client.py```
 
-### Example: client/server using a "bounce" host ###
+### Example: client/server using a bounce host ###
 
-
+TODO:
+    
 
 ## Scapy Defaults
 
