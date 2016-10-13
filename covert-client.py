@@ -25,8 +25,8 @@ TODO:
   demo mode will send packets immediately
   live mode will send 1 packet per second 3 times, once a minute (adjustable)
 - add bounce functionality
-  e.g. bounce off an active web server
-
+  e.g. bounce SYN packet off an active web server
+  
 Questions:
 - Why not bounce of DNS server(s) ?
 - Should we cipher the seq numbers we generate in order to add a layer of
