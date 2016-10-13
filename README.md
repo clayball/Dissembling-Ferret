@@ -51,11 +51,11 @@ TODO:
 
 ## Packet captures
 
+Using Scapy
+
+![localhost example](images/scapy-packet.png)
+
 ![localhost example](images/example-single.png)
-
----
-
-![localhost example](images/example-localhost.png)
 
 
 ## Scapy Defaults
