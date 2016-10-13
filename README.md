@@ -51,7 +51,7 @@ TODO:
 
 ## Packet captures
 
-A simple test using Scapy that spoof's the src IP and sets the initial sequence
+A simple test using Scapy that spoofs the src IP and sets the initial sequence
 number.
 
 ![localhost example](images/scapy-packet.png)
