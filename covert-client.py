@@ -26,6 +26,8 @@ TODO:
   live mode will send 1 packet per second 3 times, once a minute (adjustable)
 - add bounce functionality
   e.g. bounce SYN packet off an active web server
+- Add dummy packet data to mimic real traffic. (should we bother?)
+- Add TODOs to the issue queue on github.
 
 Questions:
 - Why not bounce off DNS server(s) ?
@@ -57,7 +59,11 @@ thishost = os.uname()[1]
 multiplier = 16777216        # the server will be performing the division
 message = 'hello from ' + thishost
 seq_array = []  # clear before each use
+
 destination = '127.0.0.1'
+# When using a bounce host, the bounce host will be the destination
+# and the source host will be our server.
+bounce = ''
 # Spoof our source
 spoof = '66.249.66.1'  # Spoof crawl-66-249-66-1.googlebot.com
 # Get our real ip. This is especially useful in NAT'd environments.
