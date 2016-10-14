@@ -28,9 +28,10 @@ TODO:
   e.g. bounce SYN packet off an active web server
 
 Questions:
-- Why not bounce of DNS server(s) ?
+- Why not bounce off DNS server(s) ?
 - Should we cipher the seq numbers we generate in order to add a layer of
-  obfuscation?
+  obfuscation? So if the traffic is detected it won't be easily translated.
+
 '''
 
 # =======
@@ -65,6 +66,21 @@ interfaces = netifaces.interfaces()
 # =========
 # Functions
 # =========
+
+
+# TODO:
+# Add functions to perform the various techniques to test a firewall against.
+
+def exfil_ipid():
+	print '[*] Attempting ID identification exfil..'
+
+
+def exfil_iseq():
+	print '[*] Attempting initial sequence number exfil..'
+
+def exfil_bounce():
+	print '[*] Attempting Ack sequence number bounce exfil..'
+
 
 # Convert message
 # Lots of options here but we're going to convert each letter of the message
