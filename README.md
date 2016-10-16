@@ -1,6 +1,8 @@
-# Covert TCP
+# Dissembling Ferret
 
-Covert channels in the TCP/IP protocol suite. This topic is old but still relevant.
+Exploiting covert channels in the TCP/IP protocol suite for blue teams to
+validate security assumptions and vendor claims with respect to defensive
+technologies.
 
 TODO:
 - randomize the data sent (look like a spider)
@@ -14,21 +16,23 @@ TODO:
 ### Example: localhost ###
 
 - Watch traffic on localhost, simulated server (must be root)
-
-    tcpdump filter:
     
-    SYN flag is set: tcp[13] == 2
+    Watch port 80 traffic on the lo interface 
     
     ```tcpdump -i lo port 80```
+
+    Watch for SYN packets on the lo interface
     
     ```tcpdump -i lo tcp[13] == 2```
+
+    Watch for SYN packets on the lo interface with window size greater than 8188
     
     ```tcpdump -nxxv -i lo 'tcp[13] == 2 && tcp[16:4] > 8188'```
     
 
 - Run covert-client.py using sudo, in another shell
 
-    ```sudo ./covert-client.py```
+    ```sudo ./dferret-client.py```
 
 ### Example: client/server ###
 
@@ -36,13 +40,13 @@ TODO:
 
     On the server receiving the data..
     
-    TODO: ```sudo ./covert-server.py```
+    TODO: ```sudo ./dferret-server.py```
 
 - Run client using sudo
 
     Update destination variable in covert-client.py
     
-    ```sudo ./covert-client.py```
+    ```sudo ./dferret-client.py```
 
 ### Example: client/server using a bounce host ###
 
