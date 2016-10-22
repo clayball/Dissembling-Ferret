@@ -31,6 +31,13 @@ import pcapy
 import sys
 
 
+# ======
+# Global
+# ======
+
+multiplier = 16777216
+msg_array = []  # clear before each use
+
 # ====
 # Main
 # ====
@@ -66,6 +73,7 @@ def main(argv):
 		parse_packet(packet)
 
 
+
 # =========
 # Functions
 # =========
@@ -85,15 +93,17 @@ def parse_packet(packet) :
 	eth_header = packet[:eth_length]
 	eth = unpack('!6s6sH' , eth_header)
 	eth_protocol = socket.ntohs(eth[2])
-	print 'Destination MAC : ' + eth_addr(packet[0:6]) + ' Source MAC : ' + eth_addr(packet[6:12]) + ' Protocol : ' + str(eth_protocol)
+	#print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
+	#	  ' Source MAC: ' + eth_addr(packet[6:12]) + \
+	#	  ' Protocol: ' + str(eth_protocol)
 
-	#Parse IP packets, IP Protocol number = 8
+	# Parse IP packets, IP Protocol number = 8
 	if eth_protocol == 8 :
-		#Parse IP header
-		#take first 20 characters for the ip header
+		# Parse IP header
+		# take first 20 characters for the ip header
 		ip_header = packet[eth_length:20+eth_length]
 
-		#now unpack them :)
+		# now unpack them :)
 		iph = unpack('!BBHHHBBH4s4s' , ip_header)
 
 		version_ihl = iph[0]
@@ -107,9 +117,11 @@ def parse_packet(packet) :
 		s_addr = socket.inet_ntoa(iph[8]);
 		d_addr = socket.inet_ntoa(iph[9]);
 
-		print 'Version : ' + str(version) + ' IP Header Length : ' + str(ihl) + ' TTL : ' + str(ttl) + ' Protocol : ' + str(protocol) + ' Source Address : ' + str(s_addr) + ' Destination Address : ' + str(d_addr)
+		#print 'Version: ' + str(version) + ' IP Header Length: ' + str(ihl) + \
+		#	  ' TTL: ' + str(ttl) + ' Protocol: ' + str(protocol) + \
+		#	  ' SrcAddress: ' + str(s_addr) + ' DstAddress: ' + str(d_addr)
 
-		#TCP protocol
+		# TCP protocol (Dissembling Ferret will focus on TCP channels)
 		if protocol == 6 :
 			t = iph_length + eth_length
 			tcp_header = packet[t:t+20]
@@ -124,46 +136,70 @@ def parse_packet(packet) :
 			doff_reserved = tcph[4]
 			tcph_length = doff_reserved >> 4
 
-			print 'Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Sequence Number : ' + str(sequence) + ' Acknowledgement : ' + str(acknowledgement) + ' TCP header length : ' + str(tcph_length)
-
 			h_size = eth_length + iph_length + tcph_length * 4
 			data_size = len(packet) - h_size
 
-			#get data from the packet
+			# get data from the packet
 			data = packet[h_size:]
 
-			print 'Data : ' + data
+			# Only display the packets sent to port 37337
 
-		#ICMP Packets
+			if str(dest_port) == '37337':
+				print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
+					  ' Source MAC: ' + eth_addr(packet[6:12]) + \
+					  ' Protocol: ' + str(eth_protocol)
+				print 'Version: ' + str(version) + ' IP Header Length: ' + str(ihl) + \
+					  ' TTL: ' + str(ttl) + ' Protocol: ' + str(protocol) + \
+					  ' SrcAddress: ' + str(s_addr) + ' DstAddress: ' + str(d_addr)
+				print 'SrcPort:  ' + str(source_port) + \
+					' DstPort: ' + str(dest_port) + \
+					' Sequence Number: ' + str(sequence) + \
+					' Acknowledgement : ' + str(acknowledgement) + \
+					' TCP header length : ' + str(tcph_length)
+				print 'Data: ' + data
+				if str(ttl) == '64':
+					decipher_iseq(sequence)
+				else:
+					print 'n0ise packet'
+
+				print '[*] Received so far: '
+				for c in msg_array:
+					print '%s' % c
+				print ''
+
+			#print 'Data: ' + data
+
+		# ICMP Packets
 		elif protocol == 1 :
 			u = iph_length + eth_length
 			icmph_length = 4
 			icmp_header = packet[u:u+4]
 
-			#now unpack them :)
+			# now unpack them :)
 			icmph = unpack('!BBH' , icmp_header)
 
 			icmp_type = icmph[0]
 			code = icmph[1]
 			checksum = icmph[2]
 
-			print 'Type : ' + str(icmp_type) + ' Code : ' + str(code) + ' Checksum : ' + str(checksum)
+			#print 'Type: ' + str(icmp_type) + ' Code: ' + str(code) + \
+			#	  ' Checksum: ' + str(checksum)
 
 			h_size = eth_length + iph_length + icmph_length
 			data_size = len(packet) - h_size
 
-			#get data from the packet
+			# get data from the packet
 			data = packet[h_size:]
 
-			print 'Data : ' + data
+			#print 'Data: ' + data
 
-		#UDP packets
+		# UDP packets
 		elif protocol == 17 :
 			u = iph_length + eth_length
 			udph_length = 8
 			udp_header = packet[u:u+8]
 
-			#now unpack them :)
+			# now unpack them :)
 			udph = unpack('!HHHH' , udp_header)
 
 			source_port = udph[0]
@@ -171,7 +207,10 @@ def parse_packet(packet) :
 			length = udph[2]
 			checksum = udph[3]
 
-			print 'Source Port : ' + str(source_port) + ' Dest Port : ' + str(dest_port) + ' Length : ' + str(length) + ' Checksum : ' + str(checksum)
+			#print 'Source Port: ' + str(source_port) + \
+			#	  ' Dest Port: ' + str(dest_port) + \
+			#	  ' Length: ' + str(length) + \
+			#	  ' Checksum: ' + str(checksum)
 
 			h_size = eth_length + iph_length + udph_length
 			data_size = len(packet) - h_size
@@ -179,13 +218,26 @@ def parse_packet(packet) :
 			#get data from the packet
 			data = packet[h_size:]
 
-			print 'Data : ' + data
+			#print 'Data: ' + data
 
-		#some other IP packet like IGMP
-		else :
-			print 'Protocol other than TCP/UDP/ICMP'
+		# Some other IP packet like IGMP
+		#else:
+			#print 'Protocol other than TCP/UDP/ICMP'
 
-		print
+		#print ''
+
+
+# =========================================
+# Functions for deciphering covert channels
+# =========================================
+
+# Decipher the initial sequence numbers
+def decipher_iseq(seq):
+	char = 0
+	char = int(seq) / multiplier
+	# Add seq to the global seq_array.
+	msg_array.append(chr(char))
+	print 'Received: %s' % chr(char)
 
 
 # =========
@@ -194,3 +246,4 @@ def parse_packet(packet) :
 
 if __name__ == "__main__":
 	main(sys.argv)
+
