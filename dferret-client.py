@@ -156,7 +156,7 @@ msglen = len(seq_array)
 
 # Craft our basic packet.
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
-pkt = IP(src=spoof, dst=destination)/TCP(dport=80, flags='S')
+pkt = IP(src=spoof, dst=destination)/TCP(dport=37337, flags='S')
 
 send_packet()
 
