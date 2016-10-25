@@ -5,17 +5,21 @@
 ##############################################################################
 Packet sniffer in python using the pcapy python library
 
-Project website
 http://oss.coresecurity.com/projects/pcapy.html
 
-Most of the server code is from..
+Most of the server code comes from the binarytides website.
 www.binarytides.com/code-a-packet-sniffer-in-python-with-pcapy-extension/
 
 ##############################################################################
+20161024 - Clay
+
+In order for the server to know what method the client is using we need an
+indicator on each packet. It might also be useful to include an indicator that
+marks the beginning and end of a message.
+
 20161021 - Clay
 
 We'll be modifying this code base to suit our needs.
-
 
 ##############################################################################
 '''
