@@ -119,6 +119,12 @@ def convert_iseq(message):
 		# number.
 		exfilChar = c * multiplier
 		# Add seq to the global exfilArray.
+		if is_32bit(exfilChar):
+			print '[+] iseq size OK'
+		else:
+			print '[-] Warning: iseq int too large %d. Setting to X' % exfilChar
+			# TODO: recover safely, setting to X for now
+			exfilChar = ord(X) * multiplier
 		exfilArray.append(exfilChar)
 		print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
 
@@ -135,7 +141,7 @@ def convert_ipid(message):
 			# do nothing (refactor to if not?)
 			print '[+] IPID size OK'
 		else:
-			print '[-] Warning: exfilChar int too large %d. Setting to X' % exfilChar
+			print '[-] Warning: IPID int too large %d. Setting to X' % exfilChar
 			# TODO: recover safely, setting to X for now
 			exfilChar = ord(X) * 256
 		exfilArray.append(exfilChar)
