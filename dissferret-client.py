@@ -87,21 +87,25 @@ interfaces = netifaces.interfaces()
 # Does x fit in a 16bit int?
 # We need this for IPID
 def is_16bit(x):
-	bitl = (i).bit_length()
+	bitl = (x).bit_length()
 	if bitl <= 16:
-		print '[*] OK: int is 16bit'
+		#print '[*] OK: int is 16bit'
+		return True
 	else:
-		print '[-] Warning: int is too large.'
+		#print '[-] Warning: int is too large.'
+		return False
 
 
 # Does x fit in a 32bit int?
 # We need this for iseq
 def is_32bit(x):
-	bitl = (i).bit_length()
+	bitl = (x).bit_length()
 	if bitl <= 32:
-		print '[*] OK: int is 32bit'
+		#print '[*] OK: int is 32bit'
+		return True
 	else:
-		print '[-] Warning: int is too large.'
+		#print '[-] Warning: int is too large.'
+		return False
 
 
 # Convert message
@@ -127,6 +131,13 @@ def convert_ipid(message):
 		# number.
 		exfilChar = c * 256
 		# Add to the global exfilArray.
+		if is_16bit(exfilChar):
+			# do nothing (refactor to if not?)
+			print '[+] IPID size OK'
+		else:
+			print '[-] Warning: exfilChar int too large %d. Setting to X' % exfilChar
+			# TODO: recover safely, setting to X for now
+			exfilChar = ord(X) * 256
 		exfilArray.append(exfilChar)
 		print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
 
