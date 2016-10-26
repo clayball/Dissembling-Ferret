@@ -84,6 +84,26 @@ interfaces = netifaces.interfaces()
 # TODO:
 # Add functions to perform the various techniques to test a firewall against.
 
+# Does x fit in a 16bit int?
+# We need this for IPID
+def is_16bit(x):
+	bitl = (i).bit_length()
+	if bitl <= 16:
+		print '[*] OK: int is 16bit'
+	else:
+		print '[-] Warning: int is too large.'
+
+
+# Does x fit in a 32bit int?
+# We need this for iseq
+def is_32bit(x):
+	bitl = (i).bit_length()
+	if bitl <= 32:
+		print '[*] OK: int is 32bit'
+	else:
+		print '[-] Warning: int is too large.'
+
+
 # Convert message
 # Lots of options here but we're going to convert each letter of the message
 # to its decimal equivalent.. which will be multiplied by the multiplier.
@@ -152,6 +172,8 @@ def add_n0ise_ipid(i):
 	send(pkt)
 
 
+# In IPv4, the Identification (ID) field is a 16-bit value.
+# TODO: validate value of ipid (must be a 16-bit value)
 def exfil_ipid():
 	print '[*] Attempting ID identification exfil..'
 	i = 0
