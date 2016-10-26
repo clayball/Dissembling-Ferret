@@ -115,11 +115,12 @@ def parse_packet(packet) :
 		ihl = version_ihl & 0xF
 
 		iph_length = ihl * 4
-
+		ipid = iph[3]   # this seems to be correct
 		ttl = iph[5]
 		protocol = iph[6]
 		s_addr = socket.inet_ntoa(iph[8]);
 		d_addr = socket.inet_ntoa(iph[9]);
+
 
 		#print 'Version: ' + str(version) + ' IP Header Length: ' + str(ihl) + \
 		#	  ' TTL: ' + str(ttl) + ' Protocol: ' + str(protocol) + \
@@ -153,6 +154,7 @@ def parse_packet(packet) :
 					  ' Source MAC: ' + eth_addr(packet[6:12]) + \
 					  ' Protocol: ' + str(eth_protocol)
 				print 'Version: ' + str(version) + ' IP Header Length: ' + str(ihl) + \
+					  ' ID: ' + str(ipid) + \
 					  ' TTL: ' + str(ttl) + ' Protocol: ' + str(protocol) + \
 					  ' SrcAddress: ' + str(s_addr) + ' DstAddress: ' + str(d_addr)
 				print 'SrcPort:  ' + str(source_port) + \
@@ -163,6 +165,8 @@ def parse_packet(packet) :
 				print 'Data: ' + data
 				if str(ttl) == '64':
 					decipher_iseq(sequence)
+				elif str(ttl) == '68':
+					decipher_ipid(ipid)
 				else:
 					print 'n0ise packet'
 
@@ -240,6 +244,13 @@ def decipher_iseq(seq):
 	char = 0
 	char = int(seq) / multiplier
 	# Add seq to the global seq_array.
+	msg_array.append(chr(char))
+	print 'Received: %s' % chr(char)
+
+
+def decipher_ipid(ipid):
+	char = 0
+	char = int(ipid) / 256
 	msg_array.append(chr(char))
 	print 'Received: %s' % chr(char)
 
