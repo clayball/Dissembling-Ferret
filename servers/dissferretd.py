@@ -43,6 +43,7 @@ from struct import *
 import datetime
 import pcapy
 import sys
+import inspect
 
 
 # ======
@@ -82,10 +83,13 @@ def main(argv):
 
 	# Start sniffing packets
 	while(1) :
-		(header, packet) = cap.next()
-		#print ('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen()))
-		parse_packet(packet)
-
+		# The line below randomly generates an error. Adding try/except to fix
+		try:
+			(header, packet) = cap.next()
+			#print ('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen()))
+			parse_packet(packet)
+		except:
+			print '[-] Exception: cap.next caught ', inspect.currentframe().f_back.f_lineno
 
 
 # =========
@@ -101,7 +105,7 @@ def eth_addr (a) :
 # Function to parse a packet
 def parse_packet(packet) :
 
-	#parse ethernet header
+	# Parse ethernet header
 	eth_length = 14
 
 	eth_header = packet[:eth_length]
