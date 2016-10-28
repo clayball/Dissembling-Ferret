@@ -51,7 +51,8 @@ import inspect
 # ======
 
 multiplier = 16777216
-msg_array = []  # clear before each use
+# Clear before/after each use; otherwise the array is repeatedly appended.
+msg_array = []
 
 # ====
 # Main
@@ -88,8 +89,10 @@ def main(argv):
 			(header, packet) = cap.next()
 			#print ('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen()))
 			parse_packet(packet)
+		except IOError as e:
+			print "[-] I/O error({0}): {1}".format(e.errno, e.strerror)
 		except:
-			print '[-] Exception: cap.next caught ', inspect.currentframe().f_back.f_lineno
+			print '[-] Exception: cap.next caught, moving on..'
 
 
 # =========
@@ -162,7 +165,7 @@ def parse_packet(packet) :
 			data = packet[h_size:]
 
 			# Only display the packets sent to port 37337
-
+			# - for some reason this doesn't print after the first message
 			if str(dest_port) == '37337':
 				print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
 					  ' Source MAC: ' + eth_addr(packet[6:12]) + \
@@ -181,6 +184,9 @@ def parse_packet(packet) :
 					decipher_iseq(sequence)
 				elif str(ttl) == '68':
 					decipher_ipid(ipid)
+				elif str(ttl) == '60':
+					print '[*] End Of Message'
+					# TODO: now what?
 				else:
 					print 'n0ise packet'
 
