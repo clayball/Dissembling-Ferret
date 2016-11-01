@@ -1,4 +1,8 @@
-IP
+The following was pulled from Scapy, notice the defaults.
+
+
+IP 
+
 
 version    : BitField             = (4)
 ihl        : BitField             = (None)
