@@ -1,8 +1,8 @@
+# Protocol Headers
+
 The following was pulled from Scapy, notice the defaults.
 
-
-IP 
-
+## IP
 
 version    : BitField             = (4)
 ihl        : BitField             = (None)
@@ -19,7 +19,7 @@ dst        : Emph                 = ('127.0.0.1')
 options    : PacketListField      = ([])
 
 
-TCP
+## TCP
 
 sport      : ShortEnumField       = (20)
 dport      : ShortEnumField       = (80)
@@ -34,7 +34,7 @@ urgptr     : ShortField           = (0)
 options    : TCPOptionsField      = ({})
 
 
-DNS
+## DNS
 
 id         : ShortField           = (0)
 qr         : BitField             = (0)
@@ -55,5 +55,4 @@ qd         : DNSQRField           = (None)
 an         : DNSRRField           = (None)
 ns         : DNSRRField           = (None)
 ar         : DNSRRField           = (None)
-
 
