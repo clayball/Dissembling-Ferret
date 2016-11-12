@@ -65,16 +65,25 @@ mode = 'demo'
 
 thishost = os.uname()[1]
 multiplier = 16777216  # the server will be performing the division
-message = 'hello from ' + thishost
+
+# An example sending a SSN, with the hyphens to make it look like a SSN. A
+# smooth criminal may try to obfuscate the SSN.
+message = '111-22-3333 from ' + thishost + '\n'
 # Clear before each use. Used by initial sequence numbers and IP ID tests
 exfilArray = []
 
-destination = '127.0.0.1'
+# Get destination from the command-line.
+#destination = str(sys.argv[1])
+#print '[+] destination: ' + destination
+# Hard-code destination
+destination = '192.168.1.12'
+
 # When using a bounce host, the bounce host will be the destination,
 # the source host will be our server.
 bounce = ''
 # Spoof our source
-spoof = '66.249.66.1'  # Spoof crawl-66-249-66-1.googlebot.com
+#spoof = '66.249.66.1'  # Spoof crawl-66-249-66-1.googlebot.com
+spoof = '8.8.8.8'
 # Get our real ip. This is especially useful in NAT'd environments.
 interfaces = netifaces.interfaces()
 
