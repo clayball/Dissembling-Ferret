@@ -166,7 +166,8 @@ def parse_packet(packet) :
 
 			# Only display the packets sent to port 37337
 			# - for some reason this doesn't print after the first message
-			if str(dest_port) == '37337':
+                        # TODO make this configurable or via command-line
+			if str(dest_port) == '80':
 				print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
 					  ' Source MAC: ' + eth_addr(packet[6:12]) + \
 					  ' Protocol: ' + str(eth_protocol)
