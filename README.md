@@ -10,6 +10,17 @@ TODO:
 - See code for more TODO's
 
 
+## Server Requirements
+
+The following instructions are for RHEL based systems. Newer versions of Fedora
+should replace ```yum``` with ```dnf```.
+
+```
+sudo yum install tcpdump libpcap libpcap-devel pcapy scapy python-pip
+```
+
+
+
 ## Usage examples
 
 
@@ -49,6 +60,7 @@ TODO:
     On the server receiving the data..
     
     ```
+    cd server
     sudo ./dissferretd.py
     ```
 
@@ -59,6 +71,15 @@ TODO:
     ```
     sudo ./dissferret-client.py
     ```
+
+- Kill the server
+
+    TODO: This needs to be fixed
+    
+    The current process for killing the server: 
+    - ctrl-Z to stop dissferretd.py
+    - ```sudo ./kill-server.sh```
+
 
 ### Example: client/server using a bounce host ###
 
