@@ -6,6 +6,12 @@ The test data we'll be sending will be fake:
 - social security numbers
 - credit card numbers (name? security code?)
 
+The purpose of a firewall, next-gen or next-next-gen, is not to identify and
+block all possible ways that data can be exfiltrated from a network..
+especially when steganography is used. For this reason, we'll include some
+test that we believe the firewall will easily catch along with tests that
+include the use of steganography.
+
 
 ## Covert Channel Tests
 

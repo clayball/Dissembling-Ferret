@@ -69,7 +69,7 @@ sudo yum install tcpdump libpcap libpcap-devel pcapy scapy python-pip
     Update destination variable in covert-client.py
     
     ```
-    sudo ./dissferret-client.py
+    sudo ./dissferret-client.py 127.0.0.1
     ```
 
 - Kill the server
