@@ -7,7 +7,6 @@ technologies.
 TODO:
 - randomize the data sent (look like a spider)
 - use SYN-ACK instead of SYN? mimic response traffic (not trigger firewall alert?)
-- See code for more TODO's
 
 
 ## Server Requirements
@@ -20,18 +19,16 @@ sudo yum install tcpdump libpcap libpcap-devel pcapy scapy python-pip
 ```
 
 
-
 ## Usage examples
-
 
 ### Example: localhost ###
 
 - Watch traffic on localhost, simulated server (must be root)
     
-    Watch port 37337 traffic on the lo interface 
+    Watch port 31337 traffic on the lo interface 
     
     ```
-    tcpdump -i lo port 37337
+    tcpdump -i lo port 31337
     ```
 
     Watch for SYN packets on the lo interface
@@ -115,7 +112,7 @@ For more information, http://www.secdev.org/projects/scapy/doc/introduction.html
 Create a SYN packet with the initial sequence number set to 37337. Spoof the src
 and send it to 127.0.0.1, i.e. the lo interface.
 
-```
+```bash
 p=IP(src='192.168.1.210', dst='127.0.0.1')/TCP(dport=80, flags='S', seq=37337)
 ```
 
