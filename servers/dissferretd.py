@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
 '''
-=======================================================================
+=============================================================================
   ___  _                  _    _ _             ___                _
  |   \(_)______ ___ _ __ | |__| (_)_ _  __ _  | __|__ _ _ _ _ ___| |_
  | |) | (_-<_-</ -_) '  \| '_ \ | | ' \/ _` | | _/ -_) '_| '_/ -_)  _|
  |___/|_/__/__/\___|_|_|_|_.__/_|_|_||_\__, | |_|\___|_| |_| \___|\__|
                                        |___/
 
-=======================================================================
-
+=============================================================================
 
 Packet sniffer in python using the pcapy python library
 
@@ -20,7 +19,7 @@ www.binarytides.com/code-a-packet-sniffer-in-python-with-pcapy-extension/
 
 We'll be modifying this code base to suit our needs.
 
-##############################################################################
+# ===========================================================================
 
 20161024 - Clay
 
@@ -29,10 +28,10 @@ TODO:
   indicator on each packet, i.e., we need to know if the packets we're
   receiving are being bounced or not.
 
-- It might also be useful to include an indicator that marks the beginning and
-  end of a message.
+- It might also be useful to include an indicator that marks the beginning
+  and/or end of a message.
 
-##############################################################################
+#############################################################################
 '''
 
 # =======
@@ -74,12 +73,12 @@ def main(argv):
     print "Sniffing device " + dev
 
     '''
-    open device
+    Open device
     Arguments here are:
-    device
-    snaplen (maximum number of bytes to capture _per_packet_)
-    promiscious mode (1 for true)
-    timeout (in milliseconds)
+    - device
+    - snaplen (maximum number of bytes to capture _per_packet_)
+    - promiscious mode (1 for true)
+    - timeout (in milliseconds)
     '''
 
     cap = pcapy.open_live(dev, 65536, 1, 0)
@@ -109,16 +108,16 @@ def eth_addr(a):
 
 #
 # Function to parse a packet
+# TODO: this could be it's own Python module/class/library
 def parse_packet(packet):
     # Parse ethernet header
     eth_length = 14
 
     eth_header = packet[:eth_length]
-    eth = unpack('!6s6sH', eth_header)
+    eth = unpack('!6s6sH', eth_header)  ## TODO: spell this out
     eth_protocol = socket.ntohs(eth[2])
     # print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
-    # ' Source MAC: ' + eth_addr(packet[6:12]) + \
-    # ' Protocol: ' + str(eth_protocol)
+    # ' Source MAC: ' + eth_addr(packet[6:12])
 
     # Parse IP packets, IP Protocol number = 8
     if eth_protocol == 8:
