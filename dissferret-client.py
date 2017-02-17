@@ -15,6 +15,8 @@ others. Inject noise into the channel to confuse eavesdroppers.
 
 Sequence numbers have a generous size limit of 32bits.
 
+Stego part:
+
 The sequence numbers are converted to ASCII by dividing by 16777216 which is a
 representation of 65536*256. [1] see README
 
@@ -30,6 +32,9 @@ TODO:
 - Add TODOs to the issue queue on github.
 - Add more tests, other than convert TCP/IP channels
 - Send bad checksums (could help prevent responses to our SYN packets)
+- Add a test that sends data in the data section of a packet
+  - send '111223333' in one packet
+  - send other messages as well, will any get flagged/blocked?
 
 Questions:
 - Why not bounce off DNS server(s) ?
