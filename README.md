@@ -47,7 +47,7 @@ sudo yum install tcpdump libpcap libpcap-devel pcapy scapy python-pip
 - Run covert-client.py using sudo, in another shell
 
     ```
-    sudo ./dferret-client.py
+    sudo ./dissferret-client.py
     ```
 
 ### Example: client/server ###
