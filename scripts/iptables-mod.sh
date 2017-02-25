@@ -28,7 +28,7 @@ fi
 # We might want to create multiple rules for this chain.
 
 function check_rule {
-    iptables -C $IPCHAIN -p $PROTO --dport $PORT -s $SOURCE -m conntrack --ctstate NEW -j ACCEPT 2>nul
+    iptables -C $IPCHAIN -p $PROTO --dport $PORT -s $SOURCE -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT 2>nul
     # Return the status code of the command. The code will be 0 if the chain/rule exists
     return $?
 }
@@ -84,7 +84,7 @@ if [ "$ACTION" == "add" ]; then
             echo "[*] chain $IPCHAIN already exists..."
         fi
         echo "[*] rule does not exist, adding..."
-        iptables -A $IPCHAIN -p $PROTO --dport $PORT -s $SOURCE -m conntrack --ctstate NEW -j ACCEPT
+        iptables -A $IPCHAIN -p $PROTO --dport $PORT -s $SOURCE -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
         echo "[*] new rule added."
     else
         echo "[-] Chain/rule currently exists. No action taken."
@@ -98,7 +98,7 @@ if [ "$ACTION" == "del" ]; then
     if [ $? -eq 0 ]; then
         echo "[*] Chain and rule are present, removing..."
         # This only deletes the rule, the chain persists. TODO: remove the chain
-        iptables -D $IPCHAIN -p $PROTO --dport $PORT -s $SOURCE -m conntrack --ctstate NEW -j ACCEPT
+        iptables -D $IPCHAIN -p $PROTO --dport $PORT -s $SOURCE -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
     else
         echo "[*] Chain and rule do NOT exist. No action taken."
     fi
