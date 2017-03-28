@@ -45,6 +45,16 @@ import pcapy
 import sys
 import inspect
 
+from optparse import OptionParser
+parser = OptionParser()
+parser.add_option ("-i", "--iface", dest="iface", default="foo",
+                    help="Interface to listen on for smuggled data")
+parser.add_option ("-s", "--srcip", dest="srcip", default="66.249.66.1",
+                    help="Source address (possibly spoofed) we expect packets from")
+parser.add_option ("-p", "--port", dest="listen_port", default="80",
+                    help="Listening port")
+(options, args) = parser.parse_args()
+
 # ======
 # Global
 # ======
@@ -61,28 +71,48 @@ msg_array = []
 def main(argv):
     # List all devices
     devices = pcapy.findalldevs()
-    print (devices)
+    dev = "foo" # The device we want to listen on
+    listen_port = int(options.listen_port) # Port to listen on
 
-    # Ask user to enter device name to sniff
-    print "Available devices are :"
-    x = 0
-    for d in devices:
-        print " ", x , " ", d
-        x += 1
+    # print (devices)
 
-    while True:
-        dev = raw_input("Enter device number to sniff : ")
-        try:
-            device_choice = int(dev)
-            if device_choice > -1 and device_choice <= x:
-                break
-            else:
-                print "Device number not found"
-        except ValueError:
-            print "There was a problem with your choice (try a number)"
+    # We can parse devices from the command line
+    # If no interface is specified ask user to enter device name to sniff
+    if options.iface == "foo":
+        print "Available devices are :"
+        x = 0
+        for d in devices:
+            print " ", x , " ", d
+            x += 1
 
-    dev = devices[device_choice]
-    print "Sniffing device " + dev
+        while True:
+            dev = raw_input("Enter device number to sniff : ")
+            try:
+                device_choice = int(dev)
+                if device_choice > -1 and device_choice <= x:
+                    break
+                else:
+                    print "Device number not found"
+            except ValueError:
+                print "There was a problem with your choice (try a number)"
+
+        dev = devices[device_choice]
+    else:
+        dev = options.iface
+
+    # Ensure we have a proper device
+    try:
+        devices.index(dev)
+    except ValueError:
+        print "ERROR: Invalid listen interface"
+        exit(0)
+
+    if listen_port < 0 or listen_port > 65535:
+        print "\nERROR: Destination port number is invalid, try a number 0 to 65,535\n"
+        parser.print_help()
+        exit(0)
+
+    print "Sniffing device " + dev + " on port " + str(listen_port)
 
     '''
     Open device
@@ -101,7 +131,7 @@ def main(argv):
         try:
             (header, packet) = cap.next()
             # print ('%s: captured %d bytes, truncated to %d bytes' %(datetime.datetime.now(), header.getlen(), header.getcaplen()))
-            parse_packet(packet)
+            parse_packet(packet, listen_port)
         except IOError as e:
             print "[-] I/O error({0}): {1}".format(e.errno, e.strerror)
         except:
@@ -121,7 +151,7 @@ def eth_addr(a):
 #
 # Function to parse a packet
 # TODO: this could be it's own Python module/class/library
-def parse_packet(packet):
+def parse_packet(packet, listen_port):
     # Parse ethernet header
     eth_length = 14
 
@@ -176,10 +206,9 @@ def parse_packet(packet):
             # get data from the packet
             data = packet[h_size:]
 
-            # Only display the packets sent to port 31337
+            # Only display the packets sent to the listening port
             # - for some reason this doesn't print after the first message
-            # TODO: make this configurable or via command-line
-            if str(dest_port) == '31337':
+            if str(dest_port) == str(listen_port):
                 print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
                       ' Source MAC: ' + eth_addr(packet[6:12]) + \
                       ' Protocol: ' + str(eth_protocol)
