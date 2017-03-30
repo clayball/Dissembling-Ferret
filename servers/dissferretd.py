@@ -199,17 +199,18 @@ def parse_packet(packet):
                     decipher_iseq(sequence)
                 elif str(window) == '1338':
                     decipher_ipid(ipid)
-                elif str(window) == '7331': ## TODO: change this.. using ttl here is not a good idea!
+                elif str(window) == '7331':
                     print '[*] End Of Message'
                 # TODO: now what?
                 else:
                     print 'n0ise packet'
 
-                print '[*] Received so far: '
-                for c in msg_array:
-                    print '%s' % c
-                print ''
-                # print 'Data: ' + data
+                if str(window) != '7331':
+                    print '[*] Received so far: '
+                    for c in msg_array:
+                        print '%s' % c
+                    print ''
+                    # print 'Data: ' + data
 
 
         # ICMP Packets

