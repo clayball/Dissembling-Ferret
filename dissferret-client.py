@@ -72,11 +72,14 @@ parser.add_option ("-s", "--spoof", dest="spoof_ip", default="66.249.66.1",
                     help="Spoof the source IP address as this value")
 parser.add_option ("-p", "--port", dest="dstport", default="80",
                     help="Destination port (port for Dissembling Ferret server listener)")
+parser.add_option ("-m", "--mode", dest="mode", default="demo",
+                    help="Demo or live mode - send packets slowly or immediately")
 (options, args) = parser.parse_args()
 
 destination = options.destination_ip
 spoof = options.spoof_ip
 dstport = int(options.dstport)
+mode = options.mode
 
 # Ensure we have a destination specified
 if destination == "foo":
@@ -103,13 +106,16 @@ if dstport < 0 or dstport > 65535:
     parser.print_help()
     exit(0)
 
+while mode != 'demo' or mode != 'live':
+    mode = raw_input("Use a valid mode (live/demo):")
+
 
 # ================
 # Global variables
 # ================
 
 # Set the mode
-mode = 'demo'
+#-mode = 'demo'
 # mode = 'live'
 
 thishost = os.uname()[1]
