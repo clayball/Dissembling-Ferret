@@ -168,6 +168,7 @@ def parse_packet(packet):
             sequence = tcph[2]
             acknowledgement = tcph[3]
             doff_reserved = tcph[4]
+            window = tcph[6]
             tcph_length = doff_reserved >> 4
 
             h_size = eth_length + iph_length + tcph_length * 4
@@ -179,7 +180,7 @@ def parse_packet(packet):
             # Only display the packets sent to port 31337
             # - for some reason this doesn't print after the first message
             # TODO: make this configurable or via command-line
-            if str(dest_port) == '31337':
+            if str(dest_port) == '80':
                 print 'Destination MAC: ' + eth_addr(packet[0:6]) + \
                       ' Source MAC: ' + eth_addr(packet[6:12]) + \
                       ' Protocol: ' + str(eth_protocol)
@@ -190,14 +191,15 @@ def parse_packet(packet):
                 print 'SrcPort:  ' + str(source_port) + \
                       ' DstPort: ' + str(dest_port) + \
                       ' Sequence Number: ' + str(sequence) + \
-                      ' Acknowledgement : ' + str(acknowledgement) + \
+                      ' Acknowledgement: ' + str(acknowledgement) + \
+                      ' Window Size: ' + str(window) + \
                       ' TCP header length : ' + str(tcph_length)
                 print 'Data: ' + data
-                if str(ttl) == '64':
+                if str(window) == '1337':
                     decipher_iseq(sequence)
-                elif str(ttl) == '68':
+                elif str(window) == '1338':
                     decipher_ipid(ipid)
-                elif str(ttl) == '60': ## TODO: change this.. using ttl here is not a good idea!
+                elif str(window) == '7331': ## TODO: change this.. using ttl here is not a good idea!
                     print '[*] End Of Message'
                 # TODO: now what?
                 else:
