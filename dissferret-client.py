@@ -106,8 +106,8 @@ if dstport < 0 or dstport > 65535:
     parser.print_help()
     exit(0)
 
-while mode != 'demo' or mode != 'live':
-    mode = raw_input("Use a valid mode (live/demo):")
+while mode != 'demo' and mode != 'live':
+	mode = raw_input("Use a valid mode (live/demo):")
 
 
 # ================
