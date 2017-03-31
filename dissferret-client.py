@@ -187,7 +187,7 @@ def is_32bit(x):
 # Set the ttl=60 to indicate end-of-message
 def send_eom():
     print '[*] Sending End-Of-Message'
-    pkt.win = 7331
+    pkt.window = 7331
     send(pkt)
 
 
