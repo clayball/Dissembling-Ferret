@@ -1,3 +1,4 @@
 .idea/*
 *.geany
 *.pyc
+lib/*.pyc
