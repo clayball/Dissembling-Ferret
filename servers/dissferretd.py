@@ -232,6 +232,8 @@ def parse_packet(packet, listen_port):
                     decipher_ipid(ipid)
                 elif str(window) == '7331':
                     print '[*] End Of Message'
+                    # Reset the data array
+                    data = []
                 # TODO: now what?
                 else:
                     print 'n0ise packet'
