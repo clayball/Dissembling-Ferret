@@ -67,7 +67,7 @@ def convert_iseq(message):
         print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
     return retval
 
-# Send message using initial sequence numbers. Add noise.
+
 def exfil_iseq(spoof, destination, dstport, message):
     """Send out a message using initial sequence numbers, much
 	like an Nmap SYN scan.  Each packet has an initiail sequence
@@ -103,10 +103,17 @@ def exfil_iseq(spoof, destination, dstport, message):
     send_eom(pkt)
 
 
-# Does x fit in a 32bit int?
-# We need this for iseq
-def is_32bit(x):
-    bitl = (x).bit_length()
+def is_32bit(input_to_check):
+    """ Validate that we have a 32-bit value so it will fit into the
+    TCP sequence number header
+
+    Args:
+        input_to_check (int): Integer value to check
+
+    Returns:
+        True if the value is 32-bit, False otherwise
+    """
+    bitl = (input_to_check).bit_length()
     if bitl <= 32:
         # print '[*] OK: int is 32bit'
         return True
@@ -115,11 +122,10 @@ def is_32bit(x):
         return False
 
 
-
-# Set the ttl=60 to indicate end-of-message
 def send_eom(pkt):
     """Send the last message, encoded with a special TTL to let
 	the server know we're done.
+    Set the ttl=60 to indicate end-of-message
 
 	Args:
 		pkt (Packet): Scapy packet
