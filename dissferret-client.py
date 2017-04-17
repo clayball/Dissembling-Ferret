@@ -147,7 +147,7 @@ print '[+] destination: ' + destination
 
 # ==== use iseq
 print '[*] Testing method Initial Sequence..'
-initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce='False')
+initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=0)
 print '[*] Sent using iseq: %s' % message
 
 
@@ -166,4 +166,4 @@ The things that are different when performing a bounce scan are:
 - src = destination server
 - dst = host to bounce off of (see spoofable addresses above)
 '''
-initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce='True')
+initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=1)
