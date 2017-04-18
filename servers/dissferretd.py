@@ -230,7 +230,7 @@ def parse_packet(packet, listen_port):
                     decipher_iseq(sequence)
                 elif str(window) == '1338':
                     decipher_ipid(ipid)
-                elif str(window) == '29200':
+                elif str(window) == '29200':  # this window size has been consistent
                     decipher_bounce(acknowledgement)
                 elif str(window) == '7331':
                     print '[*] End Of Message'
