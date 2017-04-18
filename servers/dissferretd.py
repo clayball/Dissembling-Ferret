@@ -236,12 +236,11 @@ def parse_packet(packet, listen_port):
                     print '[*] End Of Message'
                     # Reset the data array
                     data = []
-                # TODO: now what?
                 else:
                     print 'n0ise packet'
 
-                if str(window) != '7331':
-                    print '[*] Received so far: '
+                #if str(window) != '7331':
+                    #print '[*] Received so far: '
                     #for c in msg_array:
                     #    print '%s' % c
                     #print ''
