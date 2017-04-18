@@ -12,9 +12,9 @@ from scapy.all import *
 def add_n0ise_ipid(packet_sequence, pkt):
     """Add noise to the sequence numbers
 
-	Args:
-		pkt (Packet): Base IP packet from Scapy
-		packet_sequence (int): The value of the next character
+    Args:
+        pkt (Packet): Base IP packet from Scapy
+        packet_sequence (int): The value of the next character
     """
     print '[*] adding n0ise to IPID..'
     # Add some randomness
@@ -34,8 +34,8 @@ def convert_ipid(message):
     """Convert the messege, character by character, into legal values for
     the 16-bit IPID in the packet header
 
-	Args:
-		message (str): The message to convert and send
+    Args:
+        message (str): The message to convert and send
 
     Todo:
         Recover safely if we can't fit the message into 16-bits, currenlty
@@ -63,11 +63,11 @@ def convert_ipid(message):
 def exfil_ipid(spoof, destination, dstport, message):
     """Exfiltrate a message in the 16-bit IPID value in IP headers
 
-	Args:
-		spoof (str): The spoofed source IP address
-		destination (str): The destination address for the packet
-		dstport (int):	The destination port for the packets
-		message (str):	The message we want to exfiltrate
+    Args:
+        spoof (str): The spoofed source IP address
+        destination (str): The destination address for the packet
+        dstport (int):	The destination port for the packets
+        message (str):	The message we want to exfiltrate
     Todo:
         TODO: validate value of ipid (must be a 16-bit value)
     """
@@ -114,12 +114,12 @@ def is_16bit(input_to_check):
 
 def send_eom(pkt):
     """Send the last message, encoded with a special TTL to let
-	the server know we're done.
+    the server know we're done.
 
     Set the ttl=60 to indicate end-of-message
 
-	Args:
-		pkt (Packet): Scapy packet
+    Args:
+        pkt (Packet): Scapy packet
     """
     print '[*] Sending End-Of-Message'
     pkt.window = 7331 # It's a magical number!
